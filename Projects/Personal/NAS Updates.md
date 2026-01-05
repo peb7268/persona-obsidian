@@ -1,0 +1,3 @@
+== Added by TickTickSync -- 1.1.2 == 
+- [ ] Setup notification system so I get system / usage notifications from NAS  [link](https://ticktick.com/webapp/#p/6877bdee99d3516b5721334f/tasks/67bddfe11d3e51a82aa94665) #ticktick  %%[ticktick_id:: 67bddfe11d3e51a82aa94665]%% 🔽 📅 2025-07-16
+- [ ] Setup a docker container auto-updater  [link](https://ticktick.com/webapp/#p/6877bdee99d3516b5721334f/tasks/67bddfee21c551a82aa946cb) #ticktick  %%[ticktick_id:: 67bddfee21c551a82aa946cb]%% 🔽 📅 2025-07-16

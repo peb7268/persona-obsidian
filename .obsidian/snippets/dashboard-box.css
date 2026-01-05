@@ -1,0 +1,38 @@
+.dashboard-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  width: 100px;
+  flex-wrap: wrap;
+  background: var(--background-secondary-alt);
+  border-radius: 12px;
+  font-size: 2.5em;
+  font-weight: bold;
+  margin: 0 0 15px 0;
+  padding: 25px 50px;
+  text-align: center;
+  box-sizing: border-box;
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-box-row {
+  display: flex;
+}
+
+.dashboard-box-row > div {
+  margin: 0 15px;
+}
+
+.dashboard-box-row > div:first-child {
+  margin-left: 0;
+}
+
+.dashboard-box-row > div:last-child {
+  margin-right: 0;
+}
+
+.dashboard-box h4 {
+  margin: 0;
+}

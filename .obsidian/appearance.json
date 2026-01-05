@@ -1,0 +1,12 @@
+{
+  "cssTheme": "Minimal",
+  "enabledCssSnippets": [
+    "dashboard-box",
+    "full-width-dv",
+    "full-width-div",
+    "responsive-nav-grid",
+    "journal-nav-compact",
+    "mobile-home"
+  ],
+  "theme": "system"
+}

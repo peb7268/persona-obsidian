@@ -1,0 +1,78 @@
+# Persona Vault - Git Ignore
+# This file controls what gets version controlled for Persona portability
+
+# =============================================================================
+# PERSONAL DATA (Sensitive - Never Commit)
+# =============================================================================
+Resources/Agenda/
+Resources/Zettlekasten/
+Resources/People/
+Resources/Learning/
+Archive/
+Areas/
+
+# =============================================================================
+# OTHER PROJECTS (Only Persona is versioned)
+# =============================================================================
+Projects/Azienda/
+Projects/Ecomms/
+Projects/Momentum/
+Projects/Sales/
+Projects/Active Projects Index.md
+
+# =============================================================================
+# PERSONA RUNTIME (Generated at runtime)
+# =============================================================================
+Projects/Persona/instances/*/state/
+Projects/Persona/instances/*/logs/
+Projects/Persona/instances/*/.env
+Projects/Persona/config/env.md
+
+# MHM Instance (work-specific, excluded entirely)
+Projects/Persona/instances/MHM/
+
+# =============================================================================
+# OBSIDIAN RUNTIME
+# =============================================================================
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/graph.json
+.obsidian/cache/
+.obsidian/plugins/*/node_modules/
+.obsidian/plugins/persona/main.js
+
+# =============================================================================
+# PLUGIN CONFIGS WITH SECRETS
+# =============================================================================
+.obsidian/plugins/quickadd/data.json
+.obsidian/plugins/gemini-scribe/data.json
+.obsidian/plugins/whisper/data.json
+.obsidian/plugins/tickticksync/data.json
+.obsidian/plugins/persona/data.json
+.obsidian/plugins/obsidian-jira-issue/data.json
+
+# =============================================================================
+# FILES WITH TEMPLATES (Original gitignored, .template committed)
+# =============================================================================
+Ecomms Home.md
+Resources/General/Embeds/PersonalMCO-Section.md
+Resources/General/Embeds/MHM-Business-Section.md
+
+# =============================================================================
+# SYSTEM FILES
+# =============================================================================
+.smart-env/
+.trash/
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Claude Code
+.claude/
+
+# IDE/Editor
+.vscode/
+
+# Backups
+.obsidian.zip

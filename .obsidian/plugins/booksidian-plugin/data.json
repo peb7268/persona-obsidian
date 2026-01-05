@@ -1,0 +1,21 @@
+{
+  "targetFolderPath": "Resources/Learning/Goodreads",
+  "fileName": "{{title}}",
+  "goodreadsBaseUrl": "https://www.goodreads.com/review/list_rss/116871555?key=xb7zmyF3l5ZSHZvzpgAFrlGaOGsXaOw3tqliRym7aI7UTD70&shelf=",
+  "goodreadsShelves": "currently-reading\nto-read",
+  "frontmatterDictionary": {
+    "id": "id",
+    "author": "author",
+    "title": "[[title]]",
+    "pages": "pages",
+    "cover": "cover",
+    "isbn": "isbn",
+    "dateAdded": "dateAdded",
+    "dateRead": "dateRead",
+    "shelves": "shelves",
+    "bookPage": "bookPage"
+  },
+  "bodyString": "![alt text]({{cover}})\n\n**ISBN**\n{{isbn}}\n\n**Author**\n[[{{author}}]]\n\n**Date Added / Date Read**\n{{dateAdded}} / {{dateRead}}\n\n**Shelves**\n{{shelves}}\n\n**Notes**\n[[Resources/Learning/Books/{{title}}|{{title}}]]\n",
+  "frequency": "1440",
+  "overwrite": false
+}

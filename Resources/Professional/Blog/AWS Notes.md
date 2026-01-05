@@ -1,0 +1,81 @@
+
+<div class="post">
+	<h1>AWS Notes</h1>
+	<div class="post-content">
+		&lt;div class&#x3D;&quot;kg-card-markdown&quot;&gt;&lt;h2 id&#x3D;&quot;cloudformation&quot;&gt;CloudFormation&lt;/h2&gt;
+&lt;p&gt;Basically AWS&#x27;s version of Puppet. A cloudformation template is just a json object.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;stack&lt;/strong&gt;: group of AWS resources created by a sigle cloudformation template&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;cloudformation designer&lt;/strong&gt;: DND tool for making cloudformation templates&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Cloudformer tool&lt;/strong&gt;: Looks at existing resources and creates a template for that&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id&#x3D;&quot;elasticbeanstalk&quot;&gt;Elastic Beanstalk&lt;/h2&gt;
+&lt;p&gt;Automatic deployment of your application. Elastic beanstalk&#x27;s are based on &lt;strong&gt;Applications&lt;/strong&gt;. Each application will have the following properties / members.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;An Environment: You can have multiple. ( staging, production )&lt;/li&gt;
+&lt;li&gt;AMI&lt;/li&gt;
+&lt;li&gt;EC2 Instance&lt;/li&gt;
+&lt;li&gt;Auto Scaling Group&lt;/li&gt;
+&lt;li&gt;Application version&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;When uploading code to EB you upload the node modules and all.&lt;/p&gt;
+&lt;h2 id&#x3D;&quot;cloudwatch&quot;&gt;Cloudwatch&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;log streams are just groups of logs&lt;/li&gt;
+&lt;li&gt;make sure you application has permissions to write to the log group. This is done under IAM settings. This is done under the IAM policy.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id&#x3D;&quot;sqs&quot;&gt;SQS&lt;/h2&gt;
+&lt;p&gt;Fully managed queing service.&lt;br&gt;
+SQS offers two queue types:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;standard queues: unlimited throughput but can have duplicate messages&lt;/li&gt;
+&lt;li&gt;FIFO queues: up to 3k messages per second and no dupes.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;General termanology&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;visibility timeout: Make sure messages are only processed once. When a message is recieved by the queue it become invisible for this amount of time. This keeps it from being processed multiple times. After x amount of time it becomes visible again so the queue can pick it back up and try and process it again.&lt;/li&gt;
+&lt;li&gt;Dead letter queue means if a message fails to process, after x amount of time move it to a dead queue where it can be processed later. This keeps your main queue from becoming blocked.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id&#x3D;&quot;staticsitehostingons3&quot;&gt;Static Site Hosting on S3&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Create the bucket&lt;br&gt;
+&lt;code&gt;aws s3 mb s3://&amp;lt;sitename.suffix&amp;gt;&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Set the permissions&lt;br&gt;
+&lt;code&gt;aws s3api put-bucket-acl --bucket &amp;lt;sitename.com&amp;gt; --acl public-read&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Sync the files to S3 and give them the same permissions as the bucket&lt;br&gt;
+&lt;code&gt;aws s3 sync . s3://4ceas.com --acl public-read&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;URL format:&lt;br&gt;
+&lt;code&gt;http://4ceas.com.s3-website-us-east-1.amazonaws.com/&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id&#x3D;&quot;vpc&quot;&gt;VPC&lt;/h2&gt;
+&lt;p&gt;Virtual Private Cloud. Its a secure isolated grouping of related resources. Think of it as your own private data center. This is where you define:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;subnets&lt;/li&gt;
+&lt;li&gt;ip address ranges for your instances&lt;/li&gt;
+&lt;li&gt;and access control to and from instances&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Region&lt;/strong&gt;: geographical location of your data center. Think us-east, ect..&lt;br&gt;
+** Avalibility Zones**: Subsection of the region, ohio, virginia ect..&lt;/p&gt;
+&lt;p&gt;IPv4 IP ranges are required for a VPC. These are set via Classless interdomain routing blocks, or &lt;strong&gt;CIDR blocks&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Security groups&lt;/strong&gt; manage traffic to instances. In those, you can specify ports, protocol, source, and destination.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NACL&#x27;s&lt;/strong&gt; specify what traffic can come in and out of subnets.&lt;/p&gt;
+&lt;h2 id&#x3D;&quot;loadbalancerselb&quot;&gt;Load Balancers ELB&lt;/h2&gt;
+&lt;p&gt;Application load balancer: HTTP &amp;amp; HTTPS, Layer 7 routing&lt;br&gt;
+Network load balancer: TCP / TLS, layer 4 routing, long lived tcp connections&lt;br&gt;
+ELB&#x27;s are where you do HTTPS termination / certificate management&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;HTTPS termination / certificate management are done on the ELB level.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;ELB&#x27;s can be internal or external.&lt;br&gt;
+&lt;strong&gt;Target groups&lt;/strong&gt; are how you identify where you want to send the traffic to. Wether it&#x27;s EC2 instances, lambdas, ect..&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Health Checks&lt;/strong&gt;  make sure no traffic is sent to unhealthy targets.&lt;/p&gt;
+&lt;/div&gt;
+	</div>
+</div>
+

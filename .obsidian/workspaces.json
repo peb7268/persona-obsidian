@@ -1,0 +1,328 @@
+{
+  "workspaces": {
+    "Pinned Daily": {
+      "main": {
+        "id": "5324373015726ba8",
+        "type": "split",
+        "children": [
+          {
+            "id": "4509724f8bf84da7",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "e7a7b303c61786dc",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Home.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "Home"
+                }
+              },
+              {
+                "id": "9698165b6079ec8a",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Ecomms Home.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "Ecomms Home"
+                }
+              },
+              {
+                "id": "96100289e073f876",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Resources/Agenda/Weekly/2025-W19.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "2025-W19"
+                }
+              },
+              {
+                "id": "df6e64dc5fc90102",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Resources/Agenda/Daily/2025-05-07.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "2025-05-07"
+                }
+              }
+            ],
+            "currentTab": 3
+          }
+        ],
+        "direction": "vertical"
+      },
+      "left": {
+        "id": "3b6a0535944fbd85",
+        "type": "split",
+        "children": [
+          {
+            "id": "12d94ec2d2064be5",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "a9deed26aaeabf83",
+                "type": "leaf",
+                "state": {
+                  "type": "file-explorer",
+                  "state": {
+                    "sortOrder": "alphabetical",
+                    "autoReveal": false
+                  },
+                  "icon": "lucide-folder-closed",
+                  "title": "Files"
+                }
+              },
+              {
+                "id": "deb1b272d66f247f",
+                "type": "leaf",
+                "state": {
+                  "type": "search",
+                  "state": {
+                    "query": "shard",
+                    "matchingCase": false,
+                    "explainSearch": false,
+                    "collapseAll": true,
+                    "extraContext": false,
+                    "sortOrder": "byCreatedTime"
+                  },
+                  "icon": "lucide-search",
+                  "title": "Search"
+                }
+              },
+              {
+                "id": "44052e12f2e43b80",
+                "type": "leaf",
+                "state": {
+                  "type": "bookmarks",
+                  "state": {},
+                  "icon": "lucide-bookmark",
+                  "title": "Bookmarks"
+                }
+              },
+              {
+                "id": "d16baaf8aca32eb6",
+                "type": "leaf",
+                "state": {
+                  "type": "gemini-view",
+                  "state": {},
+                  "icon": "sparkles",
+                  "title": "Gemini Scribe"
+                }
+              },
+              {
+                "id": "3c62ecc517845cc8",
+                "type": "leaf",
+                "state": {
+                  "type": "recent-files",
+                  "state": {},
+                  "icon": "clock",
+                  "title": "Recent Files"
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "horizontal",
+        "width": 342.5
+      },
+      "right": {
+        "id": "ab2752f17c000ef0",
+        "type": "split",
+        "children": [
+          {
+            "id": "e0573373662edb13",
+            "type": "tabs",
+            "dimension": 33.33333333333333,
+            "children": [
+              {
+                "id": "8a52085e761df989",
+                "type": "leaf",
+                "state": {
+                  "type": "tag",
+                  "state": {
+                    "sortOrder": "frequency",
+                    "useHierarchy": true,
+                    "showSearch": false,
+                    "searchQuery": ""
+                  },
+                  "icon": "lucide-tags",
+                  "title": "Tags"
+                }
+              },
+              {
+                "id": "b6e1ebc680cfc61b",
+                "type": "leaf",
+                "state": {
+                  "type": "outline",
+                  "state": {
+                    "file": "Resources/Home.md",
+                    "followCursor": false,
+                    "showSearch": false,
+                    "searchQuery": ""
+                  },
+                  "icon": "lucide-list",
+                  "title": "Outline of Home"
+                }
+              },
+              {
+                "id": "20bfa830d270e56d",
+                "type": "leaf",
+                "state": {
+                  "type": "file-properties",
+                  "state": {
+                    "file": "Resources/Agenda/Daily/2025-05-07.md"
+                  },
+                  "icon": "lucide-info",
+                  "title": "File properties for 2025-05-07"
+                }
+              }
+            ],
+            "currentTab": 2
+          },
+          {
+            "id": "3c56d99affec0c17",
+            "type": "tabs",
+            "dimension": 28.693181818181817,
+            "children": [
+              {
+                "id": "1cf3d2bacc6e58aa",
+                "type": "leaf",
+                "state": {
+                  "type": "journal-calendar",
+                  "state": {},
+                  "icon": "calendar-days",
+                  "title": "Calendar"
+                }
+              }
+            ]
+          },
+          {
+            "id": "7895bf70ebee3e0e",
+            "type": "tabs",
+            "dimension": 37.97348484848485,
+            "children": [
+              {
+                "id": "fb700f17486ccba1",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Resources/Zettlekasten/Unraid Notes - Cleanup.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "Unraid Notes - Cleanup"
+                }
+              },
+              {
+                "id": "e4c2df516b5130c3",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Resources/General/Workflow.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "Workflow"
+                }
+              },
+              {
+                "id": "e25c3a91af29424f",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Resources/Quick Notes.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "Quick Notes"
+                }
+              },
+              {
+                "id": "5418bbc5a871bc0f",
+                "type": "leaf",
+                "pinned": true,
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Resources/Zettlekasten/Quick Tasks.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "pinned": true,
+                  "icon": "lucide-file",
+                  "title": "Quick Tasks"
+                }
+              }
+            ],
+            "currentTab": 3
+          }
+        ],
+        "direction": "horizontal",
+        "width": 452.5
+      },
+      "left-ribbon": {
+        "hiddenItems": {
+          "homepage:Open homepage": false,
+          "audio-recorder:Start/stop recording": false,
+          "omnisearch:Omnisearch": false,
+          "templater-obsidian:Templater": false,
+          "switcher:Open quick switcher": false,
+          "daily-notes:Open today's daily note": false,
+          "graph:Open graph view": false,
+          "templates:Insert template": false,
+          "command-palette:Open command palette": false,
+          "table-editor-obsidian:Advanced Tables Toolbar": false,
+          "booksidian-plugin:Booksidian Sync": false,
+          "gemini-scribe:Open Gemini Chat": false,
+          "whisper:Open recording controls": false,
+          "workspaces:Manage workspace layouts": false,
+          "quickadd:QuickAdd": false,
+          "tickticksync:TickTickSync": false
+        }
+      },
+      "active": "df6e64dc5fc90102",
+      "mtime": "2025-05-06T20:21:49-06:00"
+    }
+  },
+  "active": "Pinned Daily"
+}

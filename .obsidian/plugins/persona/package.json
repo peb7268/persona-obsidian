@@ -1,0 +1,25 @@
+{
+  "name": "obsidian-persona",
+  "version": "0.1.0",
+  "description": "Run Persona AI agents from Obsidian",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+  },
+  "keywords": [
+    "obsidian",
+    "persona",
+    "ai",
+    "agents"
+  ],
+  "author": "pbarrick",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.20.0",
+    "obsidian": "latest",
+    "typescript": "^5.0.0"
+  }
+}

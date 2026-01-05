@@ -1,0 +1,552 @@
+/* Persona Plugin Styles */
+
+/* Modal Styling */
+.persona-modal {
+  padding: 1em;
+}
+
+.persona-instance-info {
+  margin-bottom: 1em;
+  padding: 0.5em;
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+/* Tier Sections */
+.persona-tier-section {
+  margin-bottom: 1.5em;
+}
+
+.persona-tier-section h3 {
+  margin-bottom: 0.5em;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* Agent List */
+.persona-agent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+/* Agent Card */
+.persona-agent-card {
+  padding: 0.75em;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.persona-agent-header {
+  margin-bottom: 0.5em;
+}
+
+.persona-agent-role {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+/* Action Buttons */
+.persona-agent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+
+.persona-action-btn {
+  padding: 0.25em 0.75em;
+  font-size: 0.85em;
+  border-radius: 4px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.persona-action-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.persona-action-btn.selected {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+/* Selected Display */
+.persona-selected {
+  margin: 1em 0;
+  padding: 0.75em;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.persona-selected.has-selection {
+  color: var(--text-normal);
+  background: var(--background-secondary-alt);
+}
+
+/* Running Agents Section */
+.persona-running-section {
+  margin-bottom: 1em;
+  padding: 0.75em;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.persona-running-section.persona-running-active {
+  background: var(--background-secondary-alt);
+  border-color: var(--interactive-accent);
+}
+
+.persona-running-none {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.persona-running-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 600;
+  color: var(--text-accent);
+  margin-bottom: 0.5em;
+}
+
+.persona-running-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.persona-running-item {
+  font-size: 0.9em;
+  padding-left: 1.5em;
+}
+
+.persona-running-agent {
+  font-weight: 500;
+}
+
+.persona-running-action {
+  color: var(--text-muted);
+}
+
+.persona-running-time {
+  color: var(--text-faint);
+  font-size: 0.85em;
+}
+
+/* Modal Divider */
+.persona-modal-divider {
+  margin: 1.5em 0 1em 0;
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Modal Settings Section */
+.persona-modal-settings h4 {
+  margin-top: 0;
+  margin-bottom: 0.75em;
+  font-size: 0.95em;
+  color: var(--text-muted);
+}
+
+/* Status Bar */
+.persona-status-bar {
+  cursor: pointer;
+}
+
+.persona-status-running {
+  color: var(--text-accent);
+}
+
+.persona-status-error {
+  color: var(--text-error);
+}
+
+/* Spinner Animation */
+.persona-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--text-muted);
+  border-top-color: var(--text-accent);
+  border-radius: 50%;
+  animation: persona-spin 1s linear infinite;
+  margin-right: 4px;
+}
+
+@keyframes persona-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.persona-action {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+/* Log Viewer Modal */
+.persona-log-modal {
+  min-width: 600px;
+  max-width: 800px;
+}
+
+.persona-log-viewer {
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  background: var(--background-secondary);
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 1em;
+}
+
+.persona-log-viewer pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+/* Extract Note Modal */
+.persona-extract-modal {
+  min-width: 500px;
+  max-width: 600px;
+}
+
+.persona-extract-modal h2 {
+  margin-bottom: 1em;
+}
+
+.persona-extract-title-input {
+  width: 100%;
+}
+
+.persona-extract-section {
+  margin: 1em 0;
+  padding: 0.75em;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.persona-extract-section h4 {
+  margin: 0 0 0.5em 0;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+/* Duplicates Section */
+.persona-extract-duplicates {
+  background: var(--background-modifier-warning);
+  border-color: var(--text-warning);
+}
+
+.persona-extract-duplicate-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.persona-extract-duplicate-item:last-child {
+  border-bottom: none;
+}
+
+.persona-extract-duplicate-item input[type="checkbox"] {
+  margin: 0;
+}
+
+.persona-extract-duplicate-label {
+  flex: 1;
+}
+
+.persona-extract-match-score {
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
+.persona-extract-duplicate-hint {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-left: 1.5em;
+}
+
+/* Related Subjects */
+.persona-extract-subjects {
+  background: var(--background-secondary-alt);
+}
+
+.persona-extract-subject-item {
+  margin-bottom: 0.5em;
+}
+
+.persona-extract-subject-btn {
+  padding: 0.25em 0.5em;
+  font-size: 0.85em;
+  border-radius: 4px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+}
+
+.persona-extract-subject-btn:hover {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Tags */
+.persona-extract-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  align-items: center;
+}
+
+.persona-extract-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.2em 0.5em;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.persona-extract-tag-remove {
+  cursor: pointer;
+  opacity: 0.7;
+  font-weight: bold;
+}
+
+.persona-extract-tag-remove:hover {
+  opacity: 1;
+}
+
+.persona-extract-add-tag {
+  padding: 0.2em 0.5em;
+  font-size: 0.85em;
+  border-radius: 4px;
+  background: var(--background-primary);
+  border: 1px dashed var(--background-modifier-border);
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.persona-extract-add-tag:hover {
+  border-color: var(--interactive-accent);
+  color: var(--text-normal);
+}
+
+.persona-extract-tag-input {
+  padding: 0.2em 0.5em;
+  font-size: 0.85em;
+  border-radius: 4px;
+  border: 1px solid var(--interactive-accent);
+  background: var(--background-primary);
+  width: 100px;
+}
+
+/* Content Preview */
+.persona-extract-preview {
+  max-height: 150px;
+  overflow-y: auto;
+  background: var(--background-primary);
+  padding: 0.5em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.persona-extract-preview pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-monospace);
+  color: var(--text-muted);
+}
+
+/* Location Browser */
+.persona-extract-location {
+  background: var(--background-secondary);
+}
+
+/* Breadcrumb Navigation */
+.persona-extract-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.5em;
+  background: var(--background-primary);
+  border-radius: 4px;
+  margin-bottom: 0.5em;
+  font-size: 0.9em;
+}
+
+.persona-extract-breadcrumb-part {
+  cursor: pointer;
+  color: var(--text-accent);
+  padding: 0.1em 0.25em;
+  border-radius: 2px;
+}
+
+.persona-extract-breadcrumb-part:hover {
+  background: var(--background-modifier-hover);
+}
+
+.persona-extract-breadcrumb-sep {
+  color: var(--text-muted);
+  margin: 0 0.1em;
+}
+
+.persona-extract-breadcrumb-new {
+  color: var(--text-success);
+  font-style: italic;
+}
+
+/* Folder Browser */
+.persona-extract-folder-browser {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+}
+
+.persona-extract-folder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4em 0.5em;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.persona-extract-folder-item:last-child {
+  border-bottom: none;
+}
+
+.persona-extract-folder-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0.25em;
+  border-radius: 4px;
+  color: var(--text-normal);
+}
+
+.persona-extract-folder-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.persona-extract-folder-icon {
+  font-size: 1.1em;
+}
+
+.persona-extract-folder-name {
+  flex: 1;
+}
+
+.persona-extract-folder-count {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: 0.75em;
+  padding: 0.1em 0.4em;
+  border-radius: 10px;
+  margin-left: 0.5em;
+}
+
+.persona-extract-folder-use {
+  padding: 0.2em 0.5em;
+  font-size: 0.8em;
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.persona-extract-folder-item:hover .persona-extract-folder-use {
+  opacity: 1;
+}
+
+.persona-extract-folder-use:hover {
+  filter: brightness(1.1);
+}
+
+.persona-extract-folder-up {
+  width: 100%;
+  padding: 0.5em;
+  background: var(--background-secondary);
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
+.persona-extract-folder-up:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.persona-extract-folder-empty {
+  padding: 1em;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+/* Suggested Folders */
+.persona-extract-suggested {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.5em;
+  flex-wrap: wrap;
+}
+
+.persona-extract-suggested-label {
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.persona-extract-suggested-list {
+  display: flex;
+  gap: 0.25em;
+  flex-wrap: wrap;
+}
+
+.persona-extract-suggested-btn {
+  padding: 0.2em 0.5em;
+  font-size: 0.8em;
+  border-radius: 4px;
+  background: var(--background-primary);
+  border: 1px solid var(--text-accent);
+  color: var(--text-accent);
+  cursor: pointer;
+}
+
+.persona-extract-suggested-btn:hover {
+  background: var(--text-accent);
+  color: var(--text-on-accent);
+}

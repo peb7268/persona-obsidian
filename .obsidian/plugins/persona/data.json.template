@@ -1,0 +1,9 @@
+{
+  "personaRoot": "/path/to/your/vault/Projects/Persona",
+  "business": "PersonalMCO",
+  "showRibbonIcon": true,
+  "showStatusBar": true,
+  "autoProcessOnSave": true,
+  "pollingEnabled": true,
+  "pollingIntervalMinutes": 5
+}

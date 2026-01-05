@@ -1,0 +1,2 @@
+**Anthony Jeselnik**: Thoughts and Prayers 7:30 left ( making fun of things in inappropriate times and social media attention grabbers )
+**Chris Rock** - Total Blackout: 101:39 Schools and Bullying & Parenting

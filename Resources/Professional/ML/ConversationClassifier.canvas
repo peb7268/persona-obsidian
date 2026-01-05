@@ -1,0 +1,13 @@
+{
+	"nodes":[
+		{"type":"text","text":"Corpus of Conversations","id":"16715e6abc418402","x":-540,"y":0,"width":250,"height":60,"color":"2"},
+		{"type":"text","text":"Conversation Pipeline","id":"e390c9da71c52df1","x":-140,"y":-240,"width":250,"height":640,"color":"3"},
+		{"type":"text","text":"1. Heuristics","id":"b92d8aa515317d8f","x":-125,"y":-160,"width":220,"height":60,"color":"4"},
+		{"type":"text","text":"2. Keyphrase Extraction","id":"6fb4e77bb7a83168","x":-125,"y":-60,"width":220,"height":60,"color":"5"}
+	],
+	"edges":[
+		{"id":"1c598e6bd45fc0cc","fromNode":"16715e6abc418402","fromSide":"top","toNode":"e390c9da71c52df1","toSide":"top"},
+		{"id":"371eee53c3da9a53","fromNode":"b92d8aa515317d8f","fromSide":"bottom","toNode":"6fb4e77bb7a83168","toSide":"top"},
+		{"id":"c1246985705a18c4","fromNode":"b92d8aa515317d8f","fromSide":"bottom","toNode":"6fb4e77bb7a83168","toSide":"top"}
+	]
+}

@@ -1,0 +1,76 @@
+/* Compact Journal Navigation Buttons */
+/* Makes the "Today | This week | This month | This quarter" links smaller and less prominent */
+
+/* Target the journals-home code block output */
+.home-code-block {
+  font-size: 0.8em !important;
+  opacity: 0.7;
+  padding: 0 !important;
+  margin: -0.25em 0 !important;
+}
+
+.home-code-block:hover {
+  opacity: 1;
+}
+
+/* Make the links more subtle */
+.home-code-block a {
+  color: var(--text-muted) !important;
+  text-decoration: none !important;
+  margin: 0 0.3em !important;
+  text-transform: capitalize !important;
+}
+
+.home-code-block a:hover {
+  color: var(--text-accent) !important;
+  text-decoration: underline !important;
+}
+
+/* Style the pipe separators */
+.home-code-block .journal-divider {
+  opacity: 0.4;
+  margin: 0 0.2em !important;
+}
+
+/* Reduce padding around the journals-home code block container */
+.block-language-journals-home {
+  margin: -0.25em 0 !important;
+  padding: 0 !important;
+}
+
+/* ============================================ */
+/* Quick Action Buttons - Uniform Width         */
+/* ============================================ */
+
+/* Style ALL button plugin buttons with uniform width */
+.block-language-button button,
+.block-language-button button.button-default {
+  min-width: 150px !important;
+  width: 150px !important;
+  box-sizing: border-box !important;
+  padding: 0.5em 1.2em !important;
+  font-size: 0.9em !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Override the inline width:auto on inner div */
+.block-language-button button > div,
+.block-language-button button.button-default > div {
+  width: 150px !important;
+  min-width: 150px !important;
+  box-sizing: border-box !important;
+}
+
+.block-language-button button:hover {
+  filter: brightness(1.1) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.block-language-button button:active {
+  transform: translateY(0) !important;
+}

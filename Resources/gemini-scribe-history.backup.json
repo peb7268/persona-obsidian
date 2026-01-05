@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "conversations": {
+    "Resources/Agenda/Daily/2025-04-08.md": [
+      {
+        "notePath": "Resources/Agenda/Daily/2025-04-08.md",
+        "created_at": "2025-04-08T16:15:41.840Z",
+        "role": "user",
+        "message": "What is the dataview query for finding notes with the tag starred or pinned?"
+      },
+      {
+        "notePath": "Resources/Agenda/Daily/2025-04-08.md",
+        "created_at": "2025-04-08T16:15:41.842Z",
+        "role": "model",
+        "message": "I am sorry, but there is no dataview query for finding notes with the tag\nstarred or pinned in the provided files."
+      }
+    ]
+  },
+  "metadata": {
+    "exportedAt": "2025-05-04T11:10:19.820Z",
+    "pluginVersion": "1.5.1",
+    "conversationsCount": 2
+  }
+}

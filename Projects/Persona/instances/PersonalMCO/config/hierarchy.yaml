@@ -1,0 +1,23 @@
+# Agent Hierarchy for PersonalMCO
+# Generated: 2025-12-22
+
+business_name: PersonalMCO
+business_profile: personal-professional
+
+hierarchy:
+  assistant:
+    reports_to: null  # Top-level coordinator, no CEO
+    direct_reports: [researcher, project-manager]
+
+  researcher:
+    reports_to: assistant
+    direct_reports: []
+
+  project-manager:
+    reports_to: assistant
+    direct_reports: []
+
+model_assignments:
+  assistant: opus
+  researcher: opus
+  project-manager: opus

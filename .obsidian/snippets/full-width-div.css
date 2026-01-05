@@ -1,0 +1,227 @@
+/* Make dataview tables and card grids full width */
+.markdown-preview-view .dataview.table-view-table {
+    width: 100% !important;
+}
+
+.dataview.table-view-table td {
+    padding: 0.5em;
+    vertical-align: top;
+}
+
+.dataview.table-view-table td img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.inline-row {
+    display: inline-block;
+}
+
+.inline-row button {
+    opacity: 0.8;
+    transition: all 150ms;
+}
+
+.inline-row button:hover {
+    display: cursor;
+    opacity: 1;
+    scale: 1.1;
+}
+
+.home ul {
+    list-style: none !important;
+}
+
+.home .list-bullet {
+    display: none;
+}
+
+.home .has-list-bullet {
+    display: flex;
+    list-style: none;
+    justify-content: space-between;
+}
+
+.home .has-list-bullet li {
+    list-style: none !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* // Embeded documents */
+.markdown-preview-view .markdown-embed-content,
+.markdown-preview-view .markdown-embed-content > .markdown-preview-view {
+    max-height: unset;
+    min-width: unset;
+}
+
+/* Button navigation grid using table structure like dataview */
+.button-nav-grid {
+    margin: 1rem 0 !important;
+}
+
+.button-nav-grid .button-table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0.75rem !important;
+}
+
+.button-nav-grid .button-table td {
+    padding: 0 !important;
+    border: none !important;
+    vertical-align: top !important;
+    width: 33.333% !important;
+}
+
+.button-nav-grid .button-table td .button-nav-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    height: auto !important;
+    max-height: 50px !important;
+    font-weight: 500 !important;
+    transition: all 150ms ease !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-decoration: none !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    border: none !important;
+    outline: none !important;
+}
+
+.button-nav-grid .button-table td .button-nav-item:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    opacity: 0.9 !important;
+}
+
+/* Large screens (MacBook Pro, large desktop) - normal button styling */
+@media (min-width: 1200px) {
+    .button-nav-grid .button-table {
+        border-spacing: 1rem !important;
+    }
+    
+    .button-nav-grid .button-table td .button-nav-item {
+        padding: 0.75rem 1.5rem !important;
+        max-height: 45px !important;
+        font-size: 1rem !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* Medium-large screens (iPad landscape, Z Fold 7 unfolded) */
+@media (min-width: 900px) and (max-width: 1199px) {
+    .button-nav-grid .button-table {
+        border-spacing: 0.75rem !important;
+    }
+    
+    .button-nav-grid .button-table td .button-nav-item {
+        padding: 0.75rem 1.25rem !important;
+        max-height: 48px !important;
+        font-size: 0.95rem !important;
+    }
+}
+
+/* Tablet/medium screens (iPad portrait, small laptops) */
+@media (min-width: 768px) and (max-width: 899px) {
+    .button-nav-grid .button-table {
+        border-spacing: 0.75rem !important;
+    }
+    
+    .button-nav-grid .button-table td .button-nav-item {
+        padding: 1rem 1rem !important;
+        aspect-ratio: 1.5 !important;
+        min-height: 55px !important;
+        max-height: none !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Mobile screens (iPhone 16 Pro Max and below) - square card design */
+@media (max-width: 767px) {
+    .button-nav-grid .button-table {
+        border-spacing: 0.5rem !important;
+    }
+    
+    .button-nav-grid .button-table td .button-nav-item {
+        padding: 1rem 0.75rem !important;
+        aspect-ratio: 1.2 !important;
+        min-height: 70px !important;
+        height: 70px !important;
+        max-height: none !important;
+        font-size: 0.9rem !important;
+        white-space: normal !important;
+    }
+}
+
+/* Very small mobile screens - 2 column layout */
+@media (max-width: 480px) {
+    .button-nav-grid .button-table td {
+        width: 50% !important;
+    }
+    
+    .button-nav-grid .button-table td:nth-child(3) {
+        display: none !important;
+    }
+    
+    .button-nav-grid .button-table tr:first-child td:nth-child(3) {
+        display: table-cell !important;
+    }
+    
+    .button-nav-grid .button-table td .button-nav-item {
+        min-height: 65px !important;
+        height: 65px !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+/* Collapsible sections styling */
+.collapsible-section {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    margin: 1rem 0;
+    overflow: hidden;
+}
+
+.collapsible-header {
+    background: var(--background-secondary);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.collapsible-header:hover {
+    background: var(--background-modifier-hover);
+}
+
+.collapsible-content {
+    padding: 1rem;
+    background: var(--background-primary);
+}
+
+.collapsible-toggle {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    font-family: monospace;
+}
+
+/* Spacing utilities */
+.spacing-lg {
+    margin: 2rem 0;
+}
+
+.spacing-xl {
+    margin: 3rem 0;
+}

@@ -1,0 +1,152 @@
+# Marketing Agency Business Profile
+# Used for digital marketing agencies like Mile High Marketing (MHM)
+
+name: marketing-agency
+description: Full-service digital marketing agency
+
+# Agent hierarchy for this business type
+agents:
+  - name: ceo
+    template: executive/ceo.md
+    required: true
+    schedule:
+      weekly: "0 9 * * 0"      # Sunday 9 AM
+      monthly: "0 9 1 * *"     # 1st of month
+
+  - name: cro
+    template: executive/cro.md
+    required: true
+    schedule:
+      daily: "0 6 * * 1-5"     # Weekdays 6 AM
+      weekly: "0 10 * * 1"     # Monday 10 AM
+    triggers:
+      - prospect_created
+      - prospect_updated
+
+  - name: director
+    template: management/director.md
+    required: true
+    schedule:
+      hourly: "0 9-17 * * 1-5" # Business hours
+    triggers:
+      - task_created
+      - prospect_stage_change
+
+  - name: researcher
+    template: support/researcher.md
+    required: true
+    schedule:
+      daily: "0 6 * * *"       # Daily 6 AM
+    triggers:
+      - prospect_created
+      - research_requested
+      - daily_note_question
+
+  - name: assistant
+    template: support/assistant.md
+    required: true
+    schedule:
+      morning: "0 5 * * 1-5"   # Weekdays 5 AM
+      evening: "0 17 * * 1-5"  # Weekdays 5 PM
+    triggers:
+      - daily_note_created
+
+# Agents NOT included for marketing agency (vs tech firm)
+excluded_agents:
+  - cto        # No technology product
+  - architect  # No software architecture
+  - developer  # No code development
+  - qa         # No testing (campaign QA handled by director)
+  - product-owner  # Services, not products
+
+# Business-specific configuration
+config:
+  # Revenue model
+  revenue:
+    type: recurring
+    billing_cycle: monthly
+    currency: USD
+
+  # Sales pipeline stages
+  pipeline_stages:
+    - cold
+    - contacted
+    - interested
+    - qualified
+    - closed_won
+    - closed_lost
+
+  # Qualification scoring weights
+  qualification:
+    threshold: 60
+    weights:
+      business_size: 20
+      digital_presence: 30
+      location: 15
+      industry: 20
+      competitor_gaps: 15
+
+  # Target industries
+  industries:
+    primary:
+      - restaurants
+      - contractors
+      - professional-services
+    secondary:
+      - retail
+      - healthcare
+      - real-estate
+
+  # Service offerings
+  services:
+    - seo
+    - ppc
+    - content-marketing
+    - web-development
+    - analytics
+
+  # Pricing tiers
+  pricing:
+    starter:
+      price: 2500
+      services: [seo, ppc]
+    growth:
+      price: 5000
+      services: [seo, ppc, content-marketing, analytics]
+    enterprise:
+      price: 10000
+      services: all
+
+# Integration points
+integrations:
+  obsidian:
+    daily_notes: Resources/Agenda/Daily/
+    business_folder: Projects/Azienda/
+
+  external:
+    crm: obsidian  # Using Obsidian as CRM
+    # email: gmail
+    # calendar: google
+
+# File structure for this business type
+folder_structure:
+  business_folder:
+    - index.md
+    - Vision.md
+    - Sales-Strategy.md
+    - OKRs.md
+    - Sales/
+    - Sales/Prospects/
+    - Analytics/
+    - Analytics/Dashboards/
+    - Marketing/
+    - Marketing/Campaigns/
+
+  instance_folder:
+    - config/hierarchy.yaml
+    - config/schedules.yaml
+    - agents/
+    - state/
+    - state/messages/inbox/
+    - state/messages/outbox/
+    - logs/agents/

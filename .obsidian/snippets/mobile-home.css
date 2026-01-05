@@ -1,0 +1,181 @@
+/* Mobile Home Styles */
+/* Enable this snippet in Obsidian Settings > Appearance > CSS snippets */
+
+/* ===========================================
+   RESPONSIVE BUTTONS (Global - applies everywhere)
+   =========================================== */
+
+/* Mobile: Stack multi-column layouts and make buttons full-width */
+@media (max-width: 768px) {
+  /* Multi-Column Markdown plugin: Stack columns vertically */
+  .mcm-column-parent-container {
+    flex-direction: column !important;
+  }
+
+  .mcm-column-div {
+    width: 100% !important;
+  }
+
+  /* Button container: full width with margin */
+  .block-language-button {
+    width: 100% !important;
+    margin: 5px 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Button element: full width, centered text, padding */
+  button.button-default {
+    width: 100% !important;
+    text-align: center !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+}
+
+/* Obsidian Mobile app specific (non-nested syntax) */
+.is-mobile .mcm-column-parent-container {
+  flex-direction: column !important;
+}
+
+.is-mobile .mcm-column-div {
+  width: 100% !important;
+}
+
+/* Button container: full width with margin */
+.is-mobile .block-language-button {
+  width: 100% !important;
+  margin: 5px 0 !important;
+  padding: 0 !important;
+}
+
+/* Button element: full width, centered text, padding */
+.is-mobile button.button-default {
+  width: 100% !important;
+  text-align: center !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+  margin: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* ===========================================
+   MOBILE HOME PAGE SPECIFIC STYLES
+   =========================================== */
+
+.mobile-home .mobile-capture-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.mobile-home .mobile-btn {
+  display: block;
+  padding: 24px 20px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1.4em;
+  font-weight: bold;
+  text-decoration: none;
+  color: white;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.mobile-home .mobile-btn:hover {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.mobile-home .mobile-btn-thought {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.mobile-home .mobile-btn-todo {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  color: #000;
+}
+
+.mobile-home .mobile-btn-person {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.mobile-home .mobile-btn-today {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.mobile-home .mobile-today-button {
+  margin-top: 12px;
+}
+
+.mobile-home .mobile-today-button .mobile-btn {
+  width: 100%;
+}
+
+.mobile-home .mobile-nav-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mobile-home .mobile-link {
+  display: block;
+  padding: 18px 16px;
+  background: var(--background-secondary);
+  border-radius: 10px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1.1em;
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  transition: background 0.1s ease;
+}
+
+.mobile-home .mobile-link:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Reduce padding on mobile for more content */
+@media (max-width: 768px) {
+  .mobile-home {
+    padding: 8px;
+  }
+
+  .mobile-home h1 {
+    font-size: 1.5em;
+    margin-bottom: 12px;
+  }
+
+  .mobile-home h2 {
+    font-size: 1.2em;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+
+  .mobile-home .mobile-btn {
+    padding: 20px 16px;
+    font-size: 1.2em;
+  }
+
+  .mobile-home .mobile-link {
+    padding: 14px 12px;
+    font-size: 1em;
+  }
+}
+
+/* Hide Dataview metadata on mobile */
+.mobile-home .dataview.table-view-table th:nth-child(n+2),
+.mobile-home .dataview.table-view-table td:nth-child(n+2) {
+  display: none;
+}
+
+/* Style task list for mobile */
+.mobile-home .dataview.task-list-basic-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
