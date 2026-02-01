@@ -1,0 +1,118 @@
+name: Test Persona Plugin
+
+on:
+  push:
+    branches: [ main, develop, 'claude/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: .obsidian/plugins/persona/package-lock.json
+
+      - name: Install dependencies
+        working-directory: .obsidian/plugins/persona
+        run: npm ci
+
+      - name: Run TypeScript type check
+        working-directory: .obsidian/plugins/persona
+        run: npm run build
+
+      - name: Run tests
+        working-directory: .obsidian/plugins/persona
+        run: npm test -- --ci --coverage --maxWorkers=2
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: matrix.node-version == '20.x'
+        with:
+          files: .obsidian/plugins/persona/coverage/lcov.info
+          flags: unittests
+          name: codecov-persona-plugin
+          fail_ci_if_error: false
+
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4
+        if: matrix.node-version == '20.x'
+        with:
+          name: coverage-report
+          path: .obsidian/plugins/persona/coverage/
+
+      - name: Comment coverage on PR
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        if: github.event_name == 'pull_request' && matrix.node-version == '20.x'
+        with:
+          lcov-file: .obsidian/plugins/persona/coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: .obsidian/plugins/persona/package-lock.json
+
+      - name: Install dependencies
+        working-directory: .obsidian/plugins/persona
+        run: npm ci
+
+      - name: Check TypeScript compilation
+        working-directory: .obsidian/plugins/persona
+        run: npx tsc --noEmit --skipLibCheck
+
+  build:
+    name: Build Plugin
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: .obsidian/plugins/persona/package-lock.json
+
+      - name: Install dependencies
+        working-directory: .obsidian/plugins/persona
+        run: npm ci
+
+      - name: Build plugin
+        working-directory: .obsidian/plugins/persona
+        run: npm run build
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-build
+          path: |
+            .obsidian/plugins/persona/main.js
+            .obsidian/plugins/persona/manifest.json
+            .obsidian/plugins/persona/styles.css

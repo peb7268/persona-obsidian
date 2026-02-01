@@ -40,6 +40,8 @@ Projects/Persona/instances/MHM/
 .obsidian/cache/
 .obsidian/plugins/*/node_modules/
 .obsidian/plugins/persona/main.js
+.obsidian/plugins/persona/coverage/
+.obsidian/plugins/persona/.nyc_output/
 
 # =============================================================================
 # PLUGIN CONFIGS WITH SECRETS
