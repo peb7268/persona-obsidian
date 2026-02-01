@@ -50,7 +50,7 @@
  *    }
  */
 
-import { PersonaPlugin } from '../main';
+import PersonaPlugin from '../main';
 import { TFile } from 'obsidian';
 
 /**
