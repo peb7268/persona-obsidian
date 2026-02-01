@@ -1,0 +1,20 @@
+[Unit]
+Description=Persona Job Queue Worker
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/your/vault/Projects/Persona/python
+EnvironmentFile=/path/to/your/vault/Projects/Persona/python/.env
+ExecStart=/usr/bin/python3 -m persona.worker --concurrency 3
+Restart=on-failure
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=persona-worker
+
+[Install]
+WantedBy=multi-user.target
