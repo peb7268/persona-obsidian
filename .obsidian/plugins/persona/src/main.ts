@@ -3,11 +3,13 @@ import { PersonaSettings, DEFAULT_SETTINGS, MHM_AGENTS } from './types';
 import { ExecutionService } from './services/ExecutionService';
 import { SyntaxParser } from './services/SyntaxParser';
 import { TaskSyntaxService } from './services/TaskSyntaxService';
+import { JobQueueService } from './services/JobQueueService';
 import { AgentModal } from './ui/AgentModal';
 import { StatusBarManager } from './ui/StatusBar';
 import { PersonaSettingTab } from './ui/SettingsTab';
 import { LogViewerModal } from './ui/LogViewerModal';
 import { ExtractNoteModal } from './ui/ExtractNoteModal';
+import { JobQueueModal } from './ui/JobQueueModal';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -16,6 +18,7 @@ export default class PersonaPlugin extends Plugin {
   executionService: ExecutionService;
   syntaxParser: SyntaxParser;
   taskSyntaxService: TaskSyntaxService;
+  jobQueueService: JobQueueService;
   statusBar: StatusBarManager | null = null;
   private ribbonIconEl: HTMLElement | null = null;
   private statusBarEl: HTMLElement | null = null;
@@ -30,6 +33,7 @@ export default class PersonaPlugin extends Plugin {
     this.executionService = new ExecutionService(this.settings);
     this.syntaxParser = new SyntaxParser();
     this.taskSyntaxService = new TaskSyntaxService();
+    this.jobQueueService = new JobQueueService(this.settings);
 
     // Add settings tab
     this.addSettingTab(new PersonaSettingTab(this.app, this));
@@ -104,24 +108,14 @@ export default class PersonaPlugin extends Plugin {
       this.statusBarEl = this.addStatusBarItem();
       this.statusBar = new StatusBarManager(this.statusBarEl, this.settings);
 
-      // Add click handler to show instance switcher
-      this.statusBar.setClickHandler((event) => {
-        const instances = this.executionService.getAvailableInstances();
-        const menu = new Menu();
+      // Add click handler to show agent modal
+      this.statusBar.setClickHandler(() => {
+        new AgentModal(this.app, this).open();
+      });
 
-        for (const instance of instances) {
-          menu.addItem((item) => {
-            item.setTitle(instance);
-            item.setChecked(instance === this.settings.business);
-            item.onClick(async () => {
-              this.settings.business = instance;
-              await this.saveSettings();
-              this.statusBar?.updateBusiness(instance);
-            });
-          });
-        }
-
-        menu.showAtMouseEvent(event);
+      // Add view queue handler
+      this.statusBar.setViewQueueHandler(() => {
+        new JobQueueModal(this.app, this.jobQueueService).open();
       });
     }
   }

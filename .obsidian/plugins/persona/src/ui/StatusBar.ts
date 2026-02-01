@@ -1,9 +1,11 @@
 import { PersonaSettings, ProgressState } from '../types';
+import { Menu } from 'obsidian';
 
 export class StatusBarManager {
   private statusBarEl: HTMLElement;
   private settings: PersonaSettings;
   private onClickCallback: ((event: MouseEvent) => void) | null = null;
+  private onViewQueueCallback: (() => void) | null = null;
 
   constructor(statusBar: HTMLElement, settings: PersonaSettings) {
     this.statusBarEl = statusBar;
@@ -11,13 +13,45 @@ export class StatusBarManager {
     this.statusBarEl.addClass('persona-status-bar');
     this.statusBarEl.style.cursor = 'pointer';
     this.statusBarEl.addEventListener('click', (event) => {
-      this.onClickCallback?.(event);
+      this.showMenu(event);
     });
     this.setReady();
   }
 
   setClickHandler(callback: (event: MouseEvent) => void) {
     this.onClickCallback = callback;
+  }
+
+  setViewQueueHandler(callback: () => void) {
+    this.onViewQueueCallback = callback;
+  }
+
+  private showMenu(event: MouseEvent) {
+    const menu = new Menu();
+
+    menu.addItem((item) =>
+      item
+        .setTitle('Run Agent')
+        .setIcon('play')
+        .onClick(() => {
+          if (this.onClickCallback) {
+            this.onClickCallback(event);
+          }
+        })
+    );
+
+    menu.addItem((item) =>
+      item
+        .setTitle('View Queue')
+        .setIcon('list')
+        .onClick(() => {
+          if (this.onViewQueueCallback) {
+            this.onViewQueueCallback();
+          }
+        })
+    );
+
+    menu.showAtMouseEvent(event);
   }
 
   setReady() {
