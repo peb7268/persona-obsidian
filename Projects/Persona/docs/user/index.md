@@ -32,6 +32,26 @@ Understand the roadmap for Open Agent Specification:
 - A2A protocol integration
 - Migration path
 
+## Task Markers
+
+Use markers in daily notes to trigger agent processing:
+
+| Marker | Type | Behavior |
+|--------|------|----------|
+| `[?]` | Research | Auto-processed by researcher |
+| `[A]` | Agent Task | Auto-delegated by assistant |
+| `[Q]` | Queued Task | Manually triggered, explicitly deferred |
+
+### Concurrency Control
+
+`[A]` tasks are limited by `max_concurrent_tasks` (default: 2). Overflow auto-queues to `state/queue.json`.
+
+### Header-Based Routing
+
+Tasks route to instances based on H2 headers:
+- `## MHM` / `## Sales` → MHM instance
+- `## Personal` / `## MCO` → PersonalMCO instance
+
 ## Quick Start
 
 ### Run an agent with default provider (Claude)

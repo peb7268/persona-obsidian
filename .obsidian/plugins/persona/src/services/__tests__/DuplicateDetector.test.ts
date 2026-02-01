@@ -151,8 +151,11 @@ describe('DuplicateDetector', () => {
 
     it('should find partial matches above threshold', async () => {
       const mockFolder = createMockTFolder('Resources/Zettlekasten');
-      const mockFile1 = createMockTFile('Resources/Zettlekasten/JavaScript Basics.md');
-      const mockFile2 = createMockTFile('Resources/Zettlekasten/JavaScript Advanced.md');
+      // Use file names that will produce similarity scores >= 70%
+      // "JavaScript" vs "JavaScripts" = ~91% similarity (Levenshtein distance of 1)
+      const mockFile1 = createMockTFile('Resources/Zettlekasten/JavaScripts.md');
+      // "JavaScript" vs "Java Script" = ~91% similarity (only 1 space difference)
+      const mockFile2 = createMockTFile('Resources/Zettlekasten/Java Script.md');
 
       mockFolder.children = [mockFile1, mockFile2];
       mockApp.vault.getAbstractFileByPath = jest.fn(() => mockFolder);

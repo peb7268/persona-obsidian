@@ -109,9 +109,18 @@ Assistant, Researcher, Project-Manager
 | `state/progress.json` | Real-time execution progress |
 | `state/executions.json` | Execution history |
 | `state/pending-notes.json` | Queued updates |
+| `state/queue.json` | Task queue (Primary/Secondary/DLQ) |
 | `state/messages/inbox/{agent}/` | Inter-agent messages |
 | `state/context.json` | Business context |
 | `state/priorities.json` | Active priorities |
+
+### Task Queue Structure
+
+`state/queue.json` manages task retry semantics:
+
+- **Primary**: First attempt tasks
+- **Secondary**: Retry queue (failed once)
+- **DLQ**: Dead letter queue (failed twice, needs manual intervention)
 
 ## Message Protocol
 
@@ -130,15 +139,30 @@ Inter-agent messages use JSON format:
 }
 ```
 
-## Research Question Syntax
+## Task Markers
 
-In daily notes, use `[?]` markers for research questions:
+In daily notes, use markers to trigger agent processing:
+
+| Marker | Type | Trigger | Description |
+|--------|------|---------|-------------|
+| `[ ]` | Personal | Never | Standard checkbox, not processed by agents |
+| `[?]` | Research | Auto | Queued for researcher agent |
+| `[A]` | Agent Task | Auto | Delegated to assistant, limited concurrency |
+| `[Q]` | Queued Task | Manual | Explicitly deferred, processed on command |
+
+### Examples
 
 ```markdown
-### MHM
-* Working on pipeline [?] What are best practices for B2B outreach?
-* [?] How does competitor X handle pricing?
+## MHM
+- [?] What are best practices for B2B outreach?
+- [A] Draft follow-up email to Acme Corp
+- [Q] Review competitor pricing (defer to weekend)
+- [ ] Personal reminder (not processed)
 ```
+
+### Concurrency Control
+
+`[A]` tasks respect `max_concurrent_tasks` setting (default: 2). When limit reached, overflow tasks auto-queue to `state/queue.json` and process when slots open.
 
 ## Output Locations
 
@@ -161,3 +185,31 @@ Persona supports multiple AI providers:
 | Jules | `jules` | `task create --description` |
 
 Configure default provider in `config/env.md`.
+
+## Header-Based Routing
+
+In daily notes, H2 headers automatically route tasks to the appropriate instance:
+
+| Header | Instance |
+|--------|----------|
+| `## MHM` | MHM |
+| `## Personal` | PersonalMCO |
+| `## MCO` | PersonalMCO |
+| `## Sales` | MHM |
+| `## Business` | MHM |
+
+### Configuration
+
+In `config/env.md`:
+
+```markdown
+routing_enabled: true
+default_instance: PersonalMCO
+max_concurrent_tasks: 2
+
+header_mhm: MHM
+header_personal: PersonalMCO
+header_mco: PersonalMCO
+```
+
+Tasks under `## MHM` are processed by MHM agents; tasks under `## Personal` use PersonalMCO agents.

@@ -3,19 +3,18 @@
  * This allows Jest to run tests without the actual Obsidian app
  */
 
-// Re-export all our mock implementations
+// Re-export all our mock implementations including TFile, TFolder, TAbstractFile
+// These are proper classes that MockTFile/MockTFolder extend
 export * from '../src/__tests__/mocks/obsidian';
 
 // Export commonly used Obsidian classes as jest mocks
+// Note: Menu is exported from mocks/obsidian.ts as MockMenu with full implementation
 export const App = jest.fn();
 export const Plugin = jest.fn();
 export const PluginSettingTab = jest.fn();
 export const Modal = jest.fn();
 export const Notice = jest.fn();
 export const Setting = jest.fn();
-export const TFile = jest.fn();
-export const TFolder = jest.fn();
-export const TAbstractFile = jest.fn();
 export const Vault = jest.fn();
 export const Workspace = jest.fn();
 export const MetadataCache = jest.fn();
@@ -24,8 +23,7 @@ export const MarkdownView = jest.fn();
 export const MarkdownRenderer = jest.fn();
 export const Component = jest.fn();
 export const Events = jest.fn();
-export const Menu = jest.fn();
-export const MenuItem = jest.fn();
+// Menu and MenuItem are exported from mocks/obsidian.ts with full implementation
 export const Keymap = jest.fn();
 export const Scope = jest.fn();
 export const FuzzySuggestModal = jest.fn();

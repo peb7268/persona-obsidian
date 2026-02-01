@@ -4,6 +4,8 @@ journal-date: <% tp.date.now("YYYY-MM-DD") %>
 journal-index: <% tp.date.now("M") %>
 month: <% tp.date.now("YYYY-MM") %>
 quarter: <% tp.date.now("YYYY") %>-Q<% tp.date.now("Q") %>
+month_start: <% tp.date.now("YYYY-MM-01") %>
+month_end: <% moment(tp.date.now("YYYY-MM-DD")).endOf('month').format("YYYY-MM-DD") %>
 monthly_goal_1: ""
 monthly_goal_1_progress: 0
 monthly_goal_2: ""
@@ -130,6 +132,37 @@ summary:
 
 ---
 
+## Stream of Thought Rollup
+
+> [!warning]- Incomplete Tasks (This Month)
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.month_start AND file.day <= this.month_end
+> WHERE contains(meta(section).subpath, "Tasks")
+> WHERE !completed
+> GROUP BY file.link
+> ```
+
+> [!todo]- MCO Incomplete (This Month)
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.month_start AND file.day <= this.month_end
+> WHERE contains(meta(section).subpath, "MCO")
+> WHERE !completed
+> GROUP BY file.link
+> ```
+
+> [!info]- Personal Incomplete (This Month)
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.month_start AND file.day <= this.month_end
+> WHERE contains(meta(section).subpath, "Personal")
+> WHERE !completed
+> GROUP BY file.link
+> ```
+
+---
+
 ## Scratch / Notes
 
 
@@ -157,6 +190,26 @@ Largest Column: standard
 1.
 
 --- end-multi-column
+
+---
+
+## What I Did This Month
+
+### Completed Tasks by Week
+```dataview
+TASK FROM "Resources/Agenda/Daily"
+WHERE file.day >= this.month_start AND file.day <= this.month_end
+WHERE completed
+GROUP BY dateformat(file.day, "yyyy-'W'WW")
+```
+
+### Meetings This Month
+```dataview
+TABLE WITHOUT ID file.link as Meeting, Subject, People, date as Date
+FROM "Archive/Meetings"
+WHERE date >= this.month_start AND date <= this.month_end
+SORT date DESC
+```
 
 ---
 

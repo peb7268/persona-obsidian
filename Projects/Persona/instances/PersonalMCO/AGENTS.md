@@ -45,3 +45,17 @@ CODEBASES=/path/to/repo1,/path/to/repo2
 3. Uses `## Personal & MCO` section, not `## MHM`
 4. Personal projects tracked in Momentum folder
 5. Work projects tracked in MCO folder
+
+## Task Routing
+
+PersonalMCO instance handles tasks from these daily note sections:
+- `## Personal`
+- `## MCO`
+
+Task markers `[A]` and `[?]` under these headers route to PersonalMCO agents.
+
+## Task Queue
+
+Queue state: `state/queue.json`
+- Concurrency: `max_concurrent_tasks` from `config/env.md` (default: 2)
+- Overflow tasks auto-queue and process when slots open

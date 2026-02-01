@@ -1,3 +1,9 @@
+import { ProviderType, ProviderConfig, ProvidersSettings, DEFAULT_PROVIDER_CONFIGS } from './providers/types';
+import { RoutingConfig, DEFAULT_ROUTING_CONFIG } from './services/RoutingService';
+
+// Re-export for convenience
+export type { RoutingConfig } from './services/RoutingService';
+
 export interface PersonaSettings {
   personaRoot: string;
   business: string;
@@ -13,6 +19,11 @@ export interface PersonaSettings {
   autoDetectType: boolean;
   showConfirmModal: boolean;
   defaultTags: string[];
+  // Provider settings (Phase 2.5)
+  providers: ProvidersSettings;
+  defaultProvider: ProviderType;
+  // Routing settings (header-based instance selection)
+  routing: RoutingConfig;
 }
 
 export const DEFAULT_SETTINGS: PersonaSettings = {
@@ -30,6 +41,11 @@ export const DEFAULT_SETTINGS: PersonaSettings = {
   autoDetectType: true,
   showConfirmModal: true,
   defaultTags: ['zettelkasten'],
+  // Provider defaults (Phase 2.5)
+  providers: DEFAULT_PROVIDER_CONFIGS,
+  defaultProvider: 'claude',
+  // Routing defaults
+  routing: DEFAULT_ROUTING_CONFIG,
 };
 
 export interface AgentDefinition {
@@ -49,7 +65,7 @@ export interface ExecutionResult {
 }
 
 export interface SyntaxMatch {
-  type: string;
+  type: 'research-question' | 'agent-task' | 'queued-task';
   content: string;
   line: number;
 }

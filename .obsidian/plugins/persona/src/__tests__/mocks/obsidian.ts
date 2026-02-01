@@ -185,15 +185,37 @@ export class MockHTMLElement {
   });
 }
 
-export class MockTFile {
-  path: string;
-  name: string;
-  basename: string;
-  extension: string;
-  stat: { ctime: number; mtime: number; size: number };
+// Base classes for Obsidian file types
+// These are defined here so MockTFile/MockTFolder can extend them
+// and the __mocks__/obsidian.ts can export these same classes
+// This makes instanceof checks work correctly
+
+export class TAbstractFile {
+  path: string = '';
+  name: string = '';
+  vault: any = null;
+  parent: TFolder | null = null;
+}
+
+export class TFile extends TAbstractFile {
+  basename: string = '';
+  extension: string = '';
+  stat: { mtime: number; ctime: number; size: number } = { mtime: 0, ctime: 0, size: 0 };
+}
+
+export class TFolder extends TAbstractFile {
+  children: (TFile | TFolder)[] = [];
+  isRoot(): boolean {
+    return this.parent === null;
+  }
+}
+
+// MockTFile extends TFile so instanceof TFile returns true
+export class MockTFile extends TFile {
   vault: MockVault;
 
   constructor(path: string) {
+    super();
     this.path = path;
     const parts = path.split('/');
     this.name = parts[parts.length - 1];
@@ -209,17 +231,18 @@ export class MockTFile {
   }
 }
 
-export class MockTFolder {
-  path: string;
-  name: string;
-  children: (MockTFile | MockTFolder)[] = [];
-  parent: MockTFolder | null = null;
-  isRoot = jest.fn(() => this.parent === null);
+// MockTFolder extends TFolder so instanceof TFolder returns true
+export class MockTFolder extends TFolder {
+  declare children: (MockTFile | MockTFolder)[];
+  declare parent: MockTFolder | null;
 
   constructor(path: string) {
+    super();
     this.path = path;
     const parts = path.split('/');
     this.name = parts[parts.length - 1];
+    this.children = [];
+    this.parent = null;
   }
 }
 
@@ -259,6 +282,37 @@ export class MockSetting {
     return this;
   });
 }
+
+export class MockMenuItem {
+  setTitle = jest.fn(() => this);
+  setIcon = jest.fn(() => this);
+  onClick = jest.fn((callback: () => void) => {
+    // Store the callback so tests can trigger it
+    (this as any)._onClick = callback;
+    return this;
+  });
+  setChecked = jest.fn(() => this);
+  setDisabled = jest.fn(() => this);
+}
+
+export class MockMenu {
+  items: MockMenuItem[] = [];
+
+  addItem = jest.fn((callback: (item: MockMenuItem) => void) => {
+    const item = new MockMenuItem();
+    callback(item);
+    this.items.push(item);
+    return this;
+  });
+
+  addSeparator = jest.fn(() => this);
+  showAtMouseEvent = jest.fn();
+  showAtPosition = jest.fn();
+  hide = jest.fn();
+}
+
+// Export Menu as MockMenu for the obsidian mock
+export { MockMenu as Menu };
 
 // Export a factory function to create mock instances
 export function createMockApp(): MockApp {

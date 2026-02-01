@@ -12,11 +12,14 @@ schedule:
       cron: "15 5 * * 1-5"  # Weekdays 5:15 AM (offset from MHM)
     - name: evening-summary
       cron: "15 17 * * 1-5"  # Weekdays 5:15 PM (offset from MHM)
+    - name: plan-day
+      cron: "0 6 * * 1-5"   # Weekdays 6:00 AM (backup if trigger misses)
 
 triggers:
   - type: file_change
     path: "Resources/Agenda/Daily/*.md"
     operations: [create]
+    action: plan-day
   - type: file_change
     path: "Projects/Persona/instances/PersonalMCO/state/messages/inbox/assistant/"
     operations: [create]
@@ -30,7 +33,10 @@ tools:
   - Read:Resources/Agenda/Tasks/*.md
   - Read:Resources/Professional/MCO/**/*
   - Read:Projects/**/*
+  - Read:Resources/General/Templates/Meeting.md
   - Write:Resources/Agenda/Daily/*.md
+  - Write:Archive/Meetings/**/*
+  - Bash:osascript  # For macOS Calendar access
 
 state:
   file: instances/PersonalMCO/state/assistant.json
@@ -77,6 +83,49 @@ You are the Executive Assistant for personal work and MCO (VP of Engineering rol
 2. Pull forward any incomplete tasks
 3. Add scheduled activities for the day
 4. Scan for carried-over research questions
+
+### Plan Day (Event or Manual)
+
+**Trigger:** Daily note creation OR manual "Plan Day" button in status bar
+
+**Purpose:** Create meeting note placeholders for all calendar events today.
+
+**Steps:**
+1. Get today's date from daily note filename or current date
+2. Fetch calendar events via macOS Calendar AppleScript:
+   ```bash
+   osascript -e 'tell application "Calendar" to get {uid, summary, start date} of (every event of calendar "MCO" whose start date ≥ (current date) and start date < ((current date) + 1 * days))'
+   ```
+3. Read state file `state/assistant.json`
+4. Check `planned_days[today].meetings[]` for already-processed event IDs
+5. For each new event (ID not in state):
+   - Determine category by keywords in title (see Category Mapping below)
+   - Format attendees as WikiLinks: `[[Name1]], [[Name2]]`
+   - Create meeting file at `Archive/Meetings/{Category}/{YYYY-MM-DD} - {Subject}.md`
+   - Use template from `Resources/General/Templates/Meeting.md`
+   - Fill in: date, subject, people, searchableSubject
+6. Add processed events to state: `{ id, title, category, created_file, attendees }`
+7. Save updated state
+8. Report summary: "Created N meeting files, skipped M existing"
+
+**Category Mapping:**
+| Keywords in Title | Category |
+|-------------------|----------|
+| `1:1`, `1on1`, single person name | 1to1 |
+| `standup`, `retro`, `sprint`, `planning` | Scrum |
+| `leadership`, `exec`, `staff`, `all-hands` | Leadership |
+| `product`, `engineering`, `PandE`, `tech` | PandE |
+| Personal calendar source | Personal |
+| Default (no match) | Ad-Hoc |
+
+**State Tracking:**
+- File: `state/assistant.json`
+- Field: `planned_days.{YYYY-MM-DD}.meetings[]`
+- Each entry: `{ id, title, category, created_file, attendees, processed_at }`
+
+**Duplicate Prevention:**
+- Primary: Check event ID against `planned_days[today].meetings[].id`
+- Secondary: Check if file already exists before creating
 
 ## Daily Note Structure
 
@@ -234,3 +283,25 @@ Track in `state/assistant.json`:
 - Research questions delegated
 - Recurring reminders
 - Communication log
+- Planned days (meeting files created per day)
+
+### Planned Days State Schema
+```json
+{
+  "planned_days": {
+    "YYYY-MM-DD": {
+      "processed_at": "ISO timestamp",
+      "meetings": [
+        {
+          "id": "calendar-event-uid",
+          "title": "Meeting Subject",
+          "category": "Ad-Hoc|1to1|Scrum|Leadership|PandE|Personal",
+          "created_file": "Archive/Meetings/Category/YYYY-MM-DD - Subject.md",
+          "attendees": ["Name1", "Name2"],
+          "processed_at": "ISO timestamp"
+        }
+      ]
+    }
+  }
+}
+```

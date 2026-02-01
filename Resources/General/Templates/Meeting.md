@@ -1,31 +1,49 @@
 ---
-date: {{Date}}
-searchableSubject: {{Value: Subject}}
+date: {{DATE:YYYY-MM-DD}}
+searchableSubject: {{VALUE:Subject}}
 type: meeting
-company: 
+company:
 ---
 
-People:: [[Resources/People/{{VALUE: With}}]] 
-Subject:: {{Value: Subject}}
+People:: {{VALUE:People}}
+Subject:: {{VALUE:Subject}}
 Date:: [[Resources/Agenda/Daily/{{date:YYYY-MM-DD}}|{{date:YYYY-MM-DD}}]] 
 
 ---
  
-**Doc**  
-< insert doc links >
-
 **Agenda**  
 _Goal description_
 - Item 1  
+
+---
+
+**Action Items**
+* 
+
+
+---
 
 **Open Questions**
 1. Question 
 
 
+---
+
 **Decisions Made**
 
 
-**Action Items**
+---
+
+**Notes**
+
+
+
+---
+
+**Docs** 
+< insert doc links >
+
+
 
 
   

@@ -5,7 +5,7 @@
   "triggerOnLoad": true,
   "isSyncing": false,
   "lastSyncFailed": false,
-  "lastSavedStatusID": 23821697,
+  "lastSavedStatusID": 24278760,
   "currentSyncStatusID": 0,
   "refreshBooks": true,
   "booksToRefresh": [],
@@ -827,11 +827,15 @@
     "Resources/Learning/Podcasts/5 Debates Shaping AI.md": "54864186",
     "Resources/Learning/Podcasts/The Shifting Value of Content in the AI Age With Cloudflare CEO Matthew Prince.md": "55009840",
     "Resources/Learning/Podcasts/#827 Pablos Holman — One of the Scariest Hackers I’ve Ever Met.md": "55041208",
-    "Resources/Learning/Podcasts/How to Find Hidden Growth Opportunities in Your Product Albert Cheng.md": "55788906",
     "Resources/Learning/Articles/Principles of Building AI Agents.md": "56805862",
     "Resources/Learning/Podcasts/#2424 - Jelly Roll.md": "56896053",
-    "Resources/Learning/Articles/Building Agentic AI Systems.md": "56941282",
-    "Resources/Learning/Podcasts/A Guide to Difficult Conversations, Building High-Trust Teams, and Designing a Life You Love Rachel Lockett.md": "57045037"
+    "Resources/Learning/Podcasts/AI in 2026 Reid Hoffman’s Predictions on Agents, Work, and Creation.md": "57428839",
+    "Resources/Learning/Podcasts/Vibe Check Claude Cowork Is Claude Code for the Rest of Us.md": "57570695",
+    "Resources/Learning/Podcasts/Why Your AI Learning Projects Keep Fizzling Out.md": "57598118",
+    "Resources/Learning/Podcasts/Why Opus 4.5 Just Became the Most Influential AI Model.md": "57623169",
+    "Resources/Learning/Podcasts/#1047 - Jonathan Swanson - The Obvious Strategy to Take Back Your Time.md": "57686775",
+    "Resources/Learning/Podcasts/How Andrew Wilkinson Uses Opus 4.5 in His Work and Life.md": "57788793",
+    "Resources/Learning/Articles/Building Agentic AI Systems.md": "56941282"
   },
   "reimportShowConfirmation": true
 }

@@ -1,0 +1,106 @@
+# =============================================================================
+# OpenNotebook Model Configuration
+# Priority: Gemini Free → Groq Free → Ollama Local
+# =============================================================================
+# Note: This file is for reference. OpenNotebook selects models via the UI.
+# Configure your preferred models in the Settings panel after launch.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Recommended Model Selection (Free Tiers)
+# -----------------------------------------------------------------------------
+
+# DEFAULT LLM - Primary model for most tasks
+default_llm:
+  provider: google
+  model: gemini-2.0-flash-exp
+  notes: |
+    - Free tier: 15 RPM, 1M tokens/day
+    - Fast responses, good quality
+    - 1M context window
+
+# FALLBACK LLM - When Gemini rate limited
+fallback_llm:
+  provider: groq
+  model: llama-3.3-70b-versatile
+  notes: |
+    - Free tier: 30 RPM, 6K tokens/min
+    - Extremely fast inference
+    - Good for quick queries
+
+# LOCAL LLM - Offline/unlimited usage
+local_llm:
+  provider: ollama
+  model: llama3.2
+  notes: |
+    - Completely free (runs on your M3)
+    - No rate limits
+    - Install: brew install ollama && ollama pull llama3.2
+
+# -----------------------------------------------------------------------------
+# Embeddings (for RAG/vector search)
+# -----------------------------------------------------------------------------
+embeddings:
+  provider: google
+  model: text-embedding-004
+  notes: |
+    - Free tier available
+    - Good quality for semantic search
+
+# -----------------------------------------------------------------------------
+# Long Context (podcasts, large documents)
+# -----------------------------------------------------------------------------
+long_context:
+  provider: google
+  model: gemini-1.5-pro
+  notes: |
+    - 2M context window
+    - Free tier: 2 RPM, 32K tokens/day
+    - Best for synthesizing large content
+
+# -----------------------------------------------------------------------------
+# Model Comparison Reference
+# -----------------------------------------------------------------------------
+
+free_tier_limits:
+  gemini_flash:
+    requests_per_minute: 15
+    tokens_per_day: 1000000
+    context_window: 1000000
+
+  gemini_pro:
+    requests_per_minute: 2
+    tokens_per_day: 32000
+    context_window: 2000000
+
+  groq_llama:
+    requests_per_minute: 30
+    tokens_per_minute: 6000
+    context_window: 128000
+
+  ollama_local:
+    requests_per_minute: unlimited
+    tokens_per_minute: unlimited
+    context_window: 128000  # depends on model
+
+# -----------------------------------------------------------------------------
+# Setup Commands
+# -----------------------------------------------------------------------------
+
+setup_commands:
+  ollama: |
+    # Install Ollama
+    brew install ollama
+
+    # Pull recommended models
+    ollama pull llama3.2        # 3B, fast, good quality
+    ollama pull llama3.2:1b     # 1B, very fast, lighter
+    ollama pull nomic-embed-text # Local embeddings
+
+    # Start Ollama service
+    ollama serve
+
+  api_keys: |
+    # Get free API keys:
+    # Gemini: https://aistudio.google.com/app/apikey
+    # Groq:   https://console.groq.com/keys

@@ -51,11 +51,34 @@ When executing, these environment variables are set:
 
 ## Output Patterns
 
-### Research Questions
+### Task Markers
+
+| Marker | Type | Trigger | Handler |
+|--------|------|---------|---------|
+| `[?]` | Research | Auto | Researcher agent |
+| `[A]` | Agent Task | Auto | Assistant → delegates |
+| `[Q]` | Queued Task | Manual | Queue for later processing |
+
+### Research Questions `[?]`
 When processing `[?]` markers:
 1. Create Zettelkasten note: `Resources/Zettlekasten/Q-{slug}.md`
 2. Update daily note with inline answer + link
 3. Log to embed file research queue
+
+### Agent Tasks `[A]`
+When processing `[A]` markers:
+1. Assistant analyzes task context
+2. Delegates to appropriate specialist (researcher, project-manager, cro)
+3. Updates marker: `[A]` → `[x]` (done), `[>]` (delegated), `[!]` (needs input)
+4. Respects `max_concurrent_tasks` limit; overflow queued to `state/queue.json`
+
+### Queued Tasks `[Q]`
+Explicitly deferred tasks. Added to queue but not processed until triggered manually.
+
+### Header-Based Routing
+Tasks are routed to instances based on their H2 section:
+- `## MHM` → MHM instance
+- `## Personal` / `## MCO` → PersonalMCO instance
 
 ### Agent Reports
 Write to business embed file with structured markdown:
@@ -96,6 +119,7 @@ The Obsidian plugin (`.obsidian/plugins/persona/`) provides:
 |---------|-------------|
 | Open agent runner | Modal to select and run agents |
 | Process research questions | Trigger researcher on current file |
+| Process agent tasks [A] | Trigger assistant on current file |
 | Run morning briefing | Execute assistant morning routine |
 | Run evening summary | Execute assistant evening routine |
 | View agent log | Show today's agent execution log |

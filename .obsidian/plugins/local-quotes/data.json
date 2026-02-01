@@ -12,11 +12,11 @@
     {
       "content": {
         "author": "Working Out",
-        "text": "“If you don’t find the time, if you don’t do the work, you don’t get the results. – Arnold Schwarzenegger\""
+        "text": "\"I hated every minute of training, but I said, ‘Don’t quit. Suffer now and live the rest of your life as a champion. - Muhammad Ali” ."
       },
       "customClass": null,
       "id": "FnPcn",
-      "lastUpdate": 1767140440.736,
+      "lastUpdate": 1769144800.863,
       "refresh": 86400,
       "search": "Working Out"
     },
@@ -79,5 +79,5 @@
   "enableDblClick": true,
   "useAutomaticRefreshInterval": true,
   "automaticRefreshInterval": 1000,
-  "_automaticRefreshIntervalObject": 360
+  "_automaticRefreshIntervalObject": 381
 }

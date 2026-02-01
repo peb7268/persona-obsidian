@@ -1,151 +1,114 @@
-# CLAUDE.md
+# CLAUDE.md - Claude Code Enforcement
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> For cross-platform documentation, see [AGENTS.md](./AGENTS.md).
 
-## Repository Overview
+## Required Reading
 
-This is a personal knowledge management system built using Obsidian with a sophisticated organizational structure for notes, learning materials, project documentation, and daily workflows.
+Before any operation, understand the vault structure:
+1. `AGENTS.md` - Vault architecture and conventions
+2. `Projects/Persona/AGENTS.md` - Agent system (if working with agents)
+3. `Resources/General/Templates/` - Available templates
 
-## Key Directory Structure
+## CRITICAL: Daily Note Safety
 
-- **Resources/**: Main content organization hub
-  - **Agenda/**: Time-based organization (Daily, Weekly, Monthly, Tasks)
-  - **Learning/**: Educational content, books, articles, courses
-  - **Professional/**: Work-related content, MCO project notes, blog drafts
-  - **General/**: Templates, workflows, and shared utilities
-  - **People/**: CRM-style person tracking
-  - **Zettlekasten/**: Atomic notes and knowledge connections
+- **NEVER** create daily notes directly (`Resources/Agenda/Daily/*.md`)
+- **NEVER** overwrite existing daily notes
+- **ALWAYS** use embed files for agent output: `Resources/General/Embeds/`
+- Daily notes are user-owned; agents write to embeds that get transcluded
 
-- **Projects/**: Active project tracking
-  - **Sales/**: Sales pipeline, prospects, campaigns
-  - **Ecomms/**: Work project documentation
-  - **Momentum/**: Personal projects
+## CRITICAL: File Operations
 
-- **Archive/**: Historical content and completed items
+### Safe to Create/Edit
+- `Resources/Zettlekasten/*.md` - Atomic knowledge notes
+- `Resources/General/Embeds/*.md` - Agent output sections
+- `Projects/` - Project documentation
+- `Archive/` - Historical content
 
-## Obsidian Configuration
+### Read-Only (Never Modify Directly)
+- `Resources/Agenda/Daily/*.md` - User's daily notes
+- `.obsidian/` - Obsidian configuration
+- `Resources/General/Templates/*.md` - Templates
 
-The vault uses extensive Obsidian plugins and configuration:
+## Output Patterns
 
-### Key Plugins in Use
-- **Dataview**: Dynamic content queries and tables
-- **Templater**: Template automation and dynamic content
-- **QuickAdd**: Rapid content creation workflows
-- **Journals**: Calendar and timeline views
-- **Smart Connections**: AI-powered note linking
-- **Gemini Scribe**: AI integration for content generation
-- **Whisper**: Voice note transcription
-- **Buttons**: Interactive navigation elements
+### Zettelkasten Notes
+When creating atomic notes:
+```markdown
+---
+created: YYYY-MM-DD
+tags: [topic1, topic2]
+---
 
-### Templates System
-Templates are located in `Resources/General/Templates/`:
-- Daily note templates for consistent journaling
-- Meeting note templates with CRM integration
-- Sales prospect tracking templates
-- Quick capture templates
+# Note Title
 
-## Workflow Systems
+Content with [[links]] to related notes.
+```
 
-### Daily Note System
-- Daily notes follow YYYY-MM-DD format
-- Located in `Resources/Agenda/Daily/`
-- Includes task tracking, meeting notes, and reflection
-- Uses front matter for metadata (lifting, cardio tracking)
+### Embed Sections
+When writing agent output:
+```markdown
+## Section Title
+### Subsection
+- Detail 1
+- Detail 2
+```
 
-### Meeting Notes
-Meeting notes follow a three-parameter system:
-- Directory (e.g., Ad-Hoc, Leadership, Scrum)
-- Type (e.g., Discussion, Planning, 1to1)
-- Subject (e.g., MongoDB-RCA, AI-Strategy)
+### Research Answers
+When answering `[?]` questions:
+1. Create Zettelkasten note: `Resources/Zettlekasten/Q-{slug}.md`
+2. Provide inline summary in response
+3. Link to full note
 
-### Task Management
-- High priority tasks use ⏫ emoji for visibility
-- Tasks are tracked across multiple files and aggregated via Dataview
-- Integration with external systems like TickTick
+## Naming Conventions
 
-### Learning System
-- Books tracked with reading priorities and shelves
-- Learning curricula documented (e.g., Generative AI & Deep Learning)
-- Spaced repetition system for retention
-- LeetCode progress tracking via API integration
+| Type | Format | Example |
+|------|--------|---------|
+| Daily | `YYYY-MM-DD.md` | `2025-01-05.md` |
+| Meeting | `YYYY-MM-DD - Subject.md` | `2025-01-05 - Sprint Planning.md` |
+| Person | `First Last.md` | `John Smith.md` |
+| Zettel | `Descriptive-Title.md` | `B2B-Outreach-Best-Practices.md` |
+| Question | `Q-{slug}.md` | `Q-competitor-pricing.md` |
 
-## Content Creation Patterns
+## Dataview Awareness
 
-### Note Types
-1. **Fleeting Notes**: Quick captures for later processing
-2. **Literature Notes**: Summaries of external content
-3. **Permanent Notes**: Refined, connected knowledge
-4. **Meeting Notes**: Structured meeting documentation
-5. **Person Notes**: CRM-style contact management
+The vault uses Dataview queries extensively. When creating notes:
+- Include appropriate front matter
+- Use consistent tag formats
+- Maintain expected fields for queries to work
 
-### Linking Strategy
-- Extensive use of WikiLinks `[[]]` for internal connections
-- Tag-based categorization with hierarchical tags
-- Backlink tracking for relationship discovery
+## Plugin Integration
 
-## Automation Features
+### Persona Agent System
+Located at `Projects/Persona/` with its own AGENTS.md.
+- Provides agent runner modal
+- Processes research questions
+- Manages embed files
 
-### Voice Integration
-- Whisper plugin for voice-to-text transcription
-- Recordings stored in `Resources/General/Whisper/`
-- Integration with mobile capture workflows
+### Key Commands
+| Command | Description |
+|---------|-------------|
+| Open agent runner | Select and run agents |
+| Process research questions | Trigger researcher |
+| Extract to Zettelkasten | Create atomic note from selection |
 
-### Data Integration
-- LeetCode stats API integration for progress tracking
-- Goodreads integration for book management
-- External tool integration (Raycast, Gemini)
+## Validation Checklist
 
-### Content Queries
-Extensive use of Dataview queries for:
-- Currently reading books display
-- High priority task aggregation
-- Recent file navigation
-- Tag-based content filtering
+Before completing any vault operation:
+- [ ] Not modifying daily notes directly
+- [ ] Using correct file naming convention
+- [ ] Including appropriate front matter
+- [ ] Using WikiLinks for internal references
+- [ ] Following tag hierarchy patterns
 
-## Mobile Workflow
+## Development
 
-The system is designed for cross-platform use:
-- Mobile-friendly templates and shortcuts
-- Voice capture integration
-- Quick note creation via mobile apps
-- Sync considerations for external tools
+```bash
+# Build Persona plugin
+cd .obsidian/plugins/persona
+npm install
+npm run build
 
-## Development Commands
-
-Since this is not a traditional codebase, there are no build/test commands. However, useful operations include:
-
-### Obsidian Operations
-- Vault sync and backup
-- Plugin updates and management
-- Template deployment
-- Graph analysis and cleanup
-
-### Content Management
-- Link validation and cleanup
-- Orphaned note identification
-- Tag hierarchy optimization
-- Asset organization and optimization
-
-## File Naming Conventions
-
-- Daily notes: `YYYY-MM-DD.md`
-- Meeting notes: `YYYY-MM-DD - Meeting Subject.md`
-- Person notes: `First Last.md`
-- Learning notes: Descriptive titles with consistent formatting
-- Template notes: Prefixed with purpose (e.g., "Daily Template.md")
-
-## Integration Points
-
-### External Tools
-- **Raycast**: Quick access and AI integration
-- **TickTick**: Task management sync
-- **Bitwarden**: Password management integration
-- **Gemini**: AI-powered content generation
-- **Kindle/Reader**: Reading note integration
-
-### API Integrations
-- LeetCode progress tracking
-- External service webhooks
-- Content import/export pipelines
-
-This vault represents a sophisticated personal knowledge management system optimized for productivity, learning, and relationship management across both personal and professional contexts.
+# Run an agent
+cd Projects/Persona
+./scripts/run-agent.sh MHM researcher process-research-queue 60
+```

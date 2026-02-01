@@ -5,6 +5,8 @@ journal-index: <% tp.date.now("Q") %>
 quarter: <% tp.date.now("YYYY") %>-Q<% tp.date.now("Q") %>
 year: <% tp.date.now("YYYY") %>
 quarter_number: <% tp.date.now("Q") %>
+quarter_start: <% moment().startOf('quarter').format("YYYY-MM-DD") %>
+quarter_end: <% moment().endOf('quarter').format("YYYY-MM-DD") %>
 goals_personal: 0
 goals_personal_completed: 0
 goals_professional: 0
@@ -103,6 +105,37 @@ const m3Link = tp.date.now("YYYY-MM", 60);
 
 ---
 
+## Stream of Thought Rollup
+
+> [!warning]- Incomplete Tasks (This Quarter)
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.quarter_start AND file.day <= this.quarter_end
+> WHERE contains(meta(section).subpath, "Tasks")
+> WHERE !completed
+> GROUP BY file.link
+> ```
+
+> [!todo]- MCO Incomplete (This Quarter)
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.quarter_start AND file.day <= this.quarter_end
+> WHERE contains(meta(section).subpath, "MCO")
+> WHERE !completed
+> GROUP BY file.link
+> ```
+
+> [!info]- Personal Incomplete (This Quarter)
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.quarter_start AND file.day <= this.quarter_end
+> WHERE contains(meta(section).subpath, "Personal")
+> WHERE !completed
+> GROUP BY file.link
+> ```
+
+---
+
 ## Quarterly Habits Aggregation
 
 ```tracker
@@ -117,6 +150,27 @@ line:
     yAxisLabel: Pomodoros
     lineColor: orange, green
     showLegend: true
+```
+
+---
+
+## What I Did This Quarter
+
+### Completed Tasks by Month
+```dataview
+TASK FROM "Resources/Agenda/Daily"
+WHERE file.day >= this.quarter_start AND file.day <= this.quarter_end
+WHERE completed
+GROUP BY dateformat(file.day, "yyyy-MM MMMM")
+```
+
+### Meetings This Quarter
+```dataview
+TABLE WITHOUT ID file.link as Meeting, Subject, People, date as Date
+FROM "Archive/Meetings"
+WHERE date >= this.quarter_start AND date <= this.quarter_end
+SORT date DESC
+LIMIT 50
 ```
 
 ---

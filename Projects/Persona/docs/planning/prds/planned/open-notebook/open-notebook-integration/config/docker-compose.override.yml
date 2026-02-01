@@ -1,0 +1,46 @@
+# =============================================================================
+# Docker Compose Override for M3 Mac (Apple Silicon)
+# NOTE: This is a REFERENCE file - docker-compose.full.yml already works well
+# The repo uses docker-compose.full.yml which has open_notebook and surrealdb services
+# =============================================================================
+#
+# IMPORTANT: The OpenNotebook repo uses docker-compose.full.yml with:
+#   - Service: open_notebook (combined API + frontend)
+#   - Service: surrealdb
+#   - Env file: docker.env (not .env)
+#
+# To use this override with docker-compose.full.yml:
+#   docker compose -f docker-compose.full.yml -f docker-compose.override.yml up -d
+#
+# However, the default docker-compose.full.yml works well on M3 Mac without override.
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # OpenNotebook Service - Combined API + Streamlit frontend
+  # ---------------------------------------------------------------------------
+  open_notebook:
+    platform: linux/arm64
+    environment:
+      # Enable Ollama connection from Docker to host Mac
+      - OLLAMA_API_BASE=http://host.docker.internal:11434
+    extra_hosts:
+      # Required for Docker containers to reach host services (Ollama)
+      - "host.docker.internal:host-gateway"
+    # M3 has plenty of RAM - increase if needed
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # ---------------------------------------------------------------------------
+  # SurrealDB - Multi-model database
+  # ---------------------------------------------------------------------------
+  surrealdb:
+    platform: linux/arm64
+    deploy:
+      resources:
+        limits:
+          memory: 1G

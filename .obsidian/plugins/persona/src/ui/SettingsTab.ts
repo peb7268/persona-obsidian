@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import type PersonaPlugin from '../main';
+import { ProviderType } from '../providers/types';
 
 export class PersonaSettingTab extends PluginSettingTab {
   plugin: PersonaPlugin;
@@ -114,6 +115,115 @@ export class PersonaSettingTab extends PluginSettingTab {
             this.plugin.settings.pollingIntervalMinutes = parseInt(value);
             await this.plugin.saveSettings();
             this.plugin.updatePolling();
+          })
+      );
+
+    // AI Providers section (Phase 2.5)
+    containerEl.createEl('h3', { text: 'AI Providers' });
+
+    new Setting(containerEl)
+      .setName('Default provider')
+      .setDesc('The AI provider to use when not specified by agent')
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption('claude', 'Claude Code CLI')
+          .addOption('gemini', 'Gemini CLI')
+          .addOption('jules', 'Jules Tools CLI')
+          .setValue(this.plugin.settings.defaultProvider)
+          .onChange(async (value) => {
+            this.plugin.settings.defaultProvider = value as ProviderType;
+            await this.plugin.saveSettings();
+            this.plugin.executionService?.reinitializeProviders();
+          })
+      );
+
+    // Claude provider settings
+    containerEl.createEl('h4', { text: 'Claude Code CLI' });
+
+    new Setting(containerEl)
+      .setName('Enable Claude')
+      .setDesc('Use Claude Code CLI for agent execution')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.providers.claude.enabled)
+          .onChange(async (value) => {
+            this.plugin.settings.providers.claude.enabled = value;
+            await this.plugin.saveSettings();
+            this.plugin.executionService?.reinitializeProviders();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Claude executable path')
+      .setDesc('Path to the Claude CLI executable')
+      .addText((text) =>
+        text
+          .setPlaceholder('claude')
+          .setValue(this.plugin.settings.providers.claude.path)
+          .onChange(async (value) => {
+            this.plugin.settings.providers.claude.path = value;
+            await this.plugin.saveSettings();
+            this.plugin.executionService?.reinitializeProviders();
+          })
+      );
+
+    // Gemini provider settings
+    containerEl.createEl('h4', { text: 'Gemini CLI' });
+
+    new Setting(containerEl)
+      .setName('Enable Gemini')
+      .setDesc('Use Gemini CLI for agent execution')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.providers.gemini.enabled)
+          .onChange(async (value) => {
+            this.plugin.settings.providers.gemini.enabled = value;
+            await this.plugin.saveSettings();
+            this.plugin.executionService?.reinitializeProviders();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Gemini executable path')
+      .setDesc('Path to the Gemini CLI executable')
+      .addText((text) =>
+        text
+          .setPlaceholder('gemini')
+          .setValue(this.plugin.settings.providers.gemini.path)
+          .onChange(async (value) => {
+            this.plugin.settings.providers.gemini.path = value;
+            await this.plugin.saveSettings();
+            this.plugin.executionService?.reinitializeProviders();
+          })
+      );
+
+    // Jules provider settings
+    containerEl.createEl('h4', { text: 'Jules Tools CLI' });
+
+    new Setting(containerEl)
+      .setName('Enable Jules')
+      .setDesc('Use Jules Tools CLI for async task creation')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.providers.jules.enabled)
+          .onChange(async (value) => {
+            this.plugin.settings.providers.jules.enabled = value;
+            await this.plugin.saveSettings();
+            this.plugin.executionService?.reinitializeProviders();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Jules executable path')
+      .setDesc('Path to the Jules CLI executable')
+      .addText((text) =>
+        text
+          .setPlaceholder('jules')
+          .setValue(this.plugin.settings.providers.jules.path)
+          .onChange(async (value) => {
+            this.plugin.settings.providers.jules.path = value;
+            await this.plugin.saveSettings();
+            this.plugin.executionService?.reinitializeProviders();
           })
       );
   }

@@ -10,6 +10,8 @@
 - [ ] When a #quote tag is used it should be picked up by the assistant and added to our quote repository in a way that works with the plugin we're using. The author should be picked up as well. 
 - [-] BUG: The properties are incorrect for the detailed research note extracted. In the case of /Users/pbarrick/Documents/Main/Resources/Zettlekasten/ADHD Executive Burnout - Prevention and Recovery Guide.md I see commas in the related section. I also see `[[ subject ]]` syntax, I guess for subject interlinking. This probably shouldnt be in the front-matter as it breaks the properties. Maybe this should be in a visual section in the header called "Related Notes: " or something like that. 
 
+
+
 * [x] Add a **personal and MCO section under stream of thought** to better organize it.   
 * [x] Add a **journal section** under stream of thought
 
@@ -120,3 +122,13 @@ Extracted from: [[2025-12-29]]
 
 ## Related
 <!-- Add related notes here -->
+
+
+
+- [ ] Add in OpenNotebook for learning. 
+1. Review the repo at https://github.com/lfnovo/open-notebook with the intent to have it use our obsidian vault as an etl input. Look for any mentions of batch uploading, uploading via a cron, using an api for loading markdown files. 
+- Review the docs associated with the repo
+- Review the public facing website https://www.open-notebook.ai/ for the same information.
+- Do a web search for any relevant information needed as well
+
+Then make me a plan to setup open notebook on my mac and pipe in an array of folder paths from my obsidian vault. 

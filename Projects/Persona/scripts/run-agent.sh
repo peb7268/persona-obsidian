@@ -11,6 +11,10 @@
 
 set -e
 
+# Initialize nvm for non-interactive shells (cron, launchd)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 # Configuration
 PERSONA_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OBSIDIAN_ROOT="/Users/pbarrick/Documents/Main"
@@ -60,7 +64,16 @@ PROGRESS_FILE="$INSTANCE_PATH/state/progress.json"
 LOG_DIR="$INSTANCE_PATH/logs/agents"
 AGENT_DEF="$INSTANCE_PATH/agents/$AGENT.md"
 TODAY=$(date +"%Y-%m-%d")
-DAILY_NOTE="$DAILY_NOTES_DIR/$TODAY.md"
+
+# Use PERSONA_PLAN_DATE if set (from plugin for date-aware Plan Day), otherwise use today
+if [ -n "$PERSONA_PLAN_DATE" ]; then
+    TARGET_DATE="$PERSONA_PLAN_DATE"
+else
+    TARGET_DATE="$TODAY"
+fi
+
+# Use TARGET_DATE for daily note (may differ from TODAY when planning other days)
+DAILY_NOTE="$DAILY_NOTES_DIR/$TARGET_DATE.md"
 
 # Ensure directories exist
 mkdir -p "$LOCKS_DIR" "$LOG_DIR"
@@ -181,6 +194,8 @@ export_daily_note_context() {
     export PERSONA_PERSONAL_MCO_EXISTS=$(personal_mco_section_exists && echo "true" || echo "false")
     export PERSONA_PENDING_NOTES_FILE="$PENDING_NOTES_FILE"
     export PERSONA_TODAY="$TODAY"
+    # Target date for plan-day action (may differ from TODAY when planning other days)
+    export PERSONA_TARGET_DATE="$TARGET_DATE"
     # Embed file paths for agent output
     export PERSONA_MHM_EMBED="$MHM_EMBED"
     export PERSONA_PERSONAL_MCO_EMBED="$PERSONAL_MCO_EMBED"
@@ -405,6 +420,11 @@ log "Starting agent: $AGENT"
 log "Action: $ACTION"
 log "Business: $BUSINESS"
 log "Timeout: ${TIMEOUT}s"
+if [ "$TARGET_DATE" != "$TODAY" ]; then
+    log "Target Date: $TARGET_DATE (planning for different day)"
+else
+    log "Target Date: $TARGET_DATE"
+fi
 log "=========================================="
 
 # Verify agent definition exists
@@ -422,6 +442,21 @@ register_start
 
 # Initialize progress tracking
 init_progress
+
+# ============================================================================
+# EARLY EXIT: Skip researcher if no questions to process
+# ============================================================================
+# This saves ~15-40 seconds of Claude Code startup time when there's nothing to do
+if [ "$AGENT" = "researcher" ] && [ "$ACTION" = "process-research-queue" ]; then
+    QUESTION_COUNT=$(count_research_questions)
+    if [ "$QUESTION_COUNT" -eq 0 ]; then
+        log "No research questions found, skipping agent invocation"
+        update_progress "completed" "No questions to process" 0
+        clear_progress "completed"
+        update_execution_status "success" "no_questions" 0 0
+        exit 0
+    fi
+fi
 
 # Export daily note context for Claude
 export_daily_note_context
@@ -467,6 +502,7 @@ Environment Context:
 - MHM Embed File: MHM_EMBED_PATH
 - Personal/MCO Embed File: PERSONAL_MCO_EMBED_PATH
 - Today: TODAY_DATE
+- Target Date: TARGET_DATE_VAL (the date to plan for - may differ from today)
 
 Read your agent definition at: AGENT_DEF_PATH
 Follow the instructions for action: ACTION_NAME
@@ -485,6 +521,7 @@ AGENT_PROMPT="${AGENT_PROMPT//DAILY_NOTE_EXISTS_VAL/$PERSONA_DAILY_NOTE_EXISTS}"
 AGENT_PROMPT="${AGENT_PROMPT//MHM_EMBED_PATH/$MHM_EMBED}"
 AGENT_PROMPT="${AGENT_PROMPT//PERSONAL_MCO_EMBED_PATH/$PERSONAL_MCO_EMBED}"
 AGENT_PROMPT="${AGENT_PROMPT//TODAY_DATE/$TODAY}"
+AGENT_PROMPT="${AGENT_PROMPT//TARGET_DATE_VAL/$TARGET_DATE}"
 AGENT_PROMPT="${AGENT_PROMPT//AGENT_DEF_PATH/$AGENT_DEF}"
 AGENT_PROMPT="${AGENT_PROMPT//BUSINESS_FILES_PATH/$OBSIDIAN_ROOT/Projects/Azienda/$BUSINESS/}"
 AGENT_PROMPT="${AGENT_PROMPT//STATE_FILES_PATH/$INSTANCE_PATH/state/}"

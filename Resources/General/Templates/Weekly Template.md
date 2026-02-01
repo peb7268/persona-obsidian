@@ -5,6 +5,8 @@ journal-index: <% tp.date.now("WW") %>
 week: <% tp.date.now("YYYY") %>-W<% tp.date.now("WW") %>
 month: <% tp.date.now("YYYY-MM") %>
 quarter: <% tp.date.now("YYYY") %>-Q<% tp.date.now("Q") %>
+week_start: <% tp.date.weekday("YYYY-MM-DD", 0) %>
+week_end: <% tp.date.weekday("YYYY-MM-DD", 6) %>
 weekly_goal_1: ""
 weekly_goal_1_completed: false
 weekly_goal_2: ""
@@ -27,14 +29,34 @@ Type: Week
 
 ---
 
-## Week <% tp.date.now("WW") %> Focus
-^Week <% tp.date.now("WW") %> Focus
+## Stream of Thought Rollup
 
-*What 3 things must get done this week to advance monthly goals?*
+> [!warning]- Incomplete Tasks
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.week_start AND file.day <= this.week_end
+> WHERE contains(meta(section).subpath, "Tasks")
+> WHERE !completed
+> GROUP BY file.link
+> ```
 
-- [ ] <% tp.file.cursor() %>
-- [ ]
-- [ ]
+> [!todo]- MCO Incomplete
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.week_start AND file.day <= this.week_end
+> WHERE contains(meta(section).subpath, "MCO")
+> WHERE !completed
+> GROUP BY file.link
+> ```
+
+> [!info]- Personal Incomplete
+> ```dataview
+> TASK FROM "Resources/Agenda/Daily"
+> WHERE file.day >= this.week_start AND file.day <= this.week_end
+> WHERE contains(meta(section).subpath, "Personal")
+> WHERE !completed
+> GROUP BY file.link
+> ```
 
 ---
 
@@ -108,6 +130,26 @@ month:
 
 ---
 
+## What I Did This Week
+
+### Completed Tasks
+```dataview
+TASK FROM "Resources/Agenda/Daily"
+WHERE file.day >= this.week_start AND file.day <= this.week_end
+WHERE completed
+GROUP BY file.link
+```
+
+### Meetings This Week
+```dataview
+TABLE WITHOUT ID file.link as Meeting, Subject, People
+FROM "Archive/Meetings"
+WHERE date >= this.week_start AND date <= this.week_end
+SORT date DESC
+```
+
+---
+
 ## Weekly Review
 *Fill out at end of week*
 
@@ -119,6 +161,17 @@ month:
 
 ### Next Week Focus
 
+
+---
+
+## Week <% tp.date.now("WW") %> Focus
+^Week <% tp.date.now("WW") %> Focus
+
+*What 3 things must get done this week to advance monthly goals?*
+
+- [ ] <% tp.file.cursor() %>
+- [ ]
+- [ ]
 
 ---
 

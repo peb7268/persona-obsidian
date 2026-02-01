@@ -1,6 +1,9 @@
 import { spawn } from 'child_process';
 import { Notice } from 'obsidian';
 import { PersonaSettings, ExecutionResult, ProgressState } from '../types';
+import { ProviderRegistry } from '../providers/ProviderRegistry';
+import { AgentDefinitionParser } from './AgentDefinitionParser';
+import { AgentProviderOverride } from '../providers/types';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -8,8 +11,27 @@ export class ExecutionService {
   private runningExecutions: Map<string, { agent: string; action: string; startTime: Date }> = new Map();
   private lastNoticeTime: Map<string, number> = new Map();
   private readonly NOTICE_THROTTLE_MS = 2000;
+  private providerRegistry: ProviderRegistry;
+  private agentParser: AgentDefinitionParser;
 
-  constructor(private settings: PersonaSettings) {}
+  constructor(private settings: PersonaSettings) {
+    this.providerRegistry = new ProviderRegistry(settings.providers, settings.defaultProvider);
+    this.agentParser = new AgentDefinitionParser();
+  }
+
+  /**
+   * Reinitialize provider registry with new settings
+   */
+  reinitializeProviders(): void {
+    this.providerRegistry.reinitialize(this.settings.providers, this.settings.defaultProvider);
+  }
+
+  /**
+   * Get the provider registry for external access
+   */
+  getProviderRegistry(): ProviderRegistry {
+    return this.providerRegistry;
+  }
 
   /**
    * Show a notice with throttling to prevent duplicate notifications
@@ -23,7 +45,7 @@ export class ExecutionService {
     }
   }
 
-  async runAgent(agent: string, action: string): Promise<ExecutionResult> {
+  async runAgent(agent: string, action: string, instanceOverride?: string): Promise<ExecutionResult> {
     // Prevent duplicate runs of the same agent
     if (this.isAgentRunning(agent)) {
       this.showThrottledNotice(`Agent ${agent} is already running`, `running-${agent}`);
@@ -37,7 +59,7 @@ export class ExecutionService {
     }
 
     const scriptPath = `${this.settings.personaRoot}/scripts/run-agent.sh`;
-    const business = this.settings.business;
+    const business = instanceOverride || this.settings.business;
     const executionId = `${agent}-${Date.now()}`;
     const startTime = new Date();
 
@@ -93,6 +115,155 @@ export class ExecutionService {
     });
   }
 
+  /**
+   * Run an agent using native TypeScript providers (Phase 2.5)
+   *
+   * This method bypasses shell scripts and directly invokes the AI CLI tools
+   * using the appropriate provider based on agent definition or settings.
+   */
+  async runAgentNative(agent: string, action: string, instanceOverride?: string): Promise<ExecutionResult> {
+    // Prevent duplicate runs of the same agent
+    if (this.isAgentRunning(agent)) {
+      this.showThrottledNotice(`Agent ${agent} is already running`, `running-${agent}`);
+      return {
+        success: false,
+        agent,
+        action,
+        startTime: new Date(),
+        status: 'failed',
+      };
+    }
+
+    const executionId = `${agent}-${Date.now()}`;
+    const startTime = new Date();
+    const business = instanceOverride || this.settings.business;
+
+    // Track running execution
+    this.runningExecutions.set(executionId, { agent, action, startTime });
+
+    try {
+      // Get agent-specific provider override from agent definition file
+      const agentPath = this.agentParser.buildAgentPath(
+        this.settings.personaRoot,
+        business,
+        agent
+      );
+      const providerOverride = this.agentParser.getProviderOverride(agentPath);
+
+      // Get the appropriate provider
+      const provider = this.providerRegistry.getProvider(providerOverride);
+
+      // Build the prompt from action file
+      const prompt = await this.buildPromptFromAction(agent, action);
+      if (!prompt) {
+        this.runningExecutions.delete(executionId);
+        this.showThrottledNotice(`Action file not found: ${action}`, `error-${agent}`);
+        return {
+          success: false,
+          agent,
+          action,
+          startTime,
+          endTime: new Date(),
+          status: 'failed',
+        };
+      }
+
+      // Get the instance path for working directory
+      const instancePath = path.join(this.settings.personaRoot, 'instances', business);
+
+      // Execute using the provider
+      const result = await provider.execute({
+        prompt,
+        model: providerOverride?.model || 'sonnet',
+        cwd: instancePath,
+        timeout: 300000, // 5 minute default timeout
+      });
+
+      this.runningExecutions.delete(executionId);
+      const endTime = new Date();
+      const durationSec = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+
+      if (result.success) {
+        this.showThrottledNotice(
+          `Agent ${agent} (${provider.displayName}) completed in ${durationSec}s`,
+          `complete-${agent}`
+        );
+      } else {
+        const errorMsg = result.stderr?.slice(0, 100) || 'Unknown error';
+        this.showThrottledNotice(`Agent ${agent} failed: ${errorMsg}`, `fail-${agent}`);
+      }
+
+      return {
+        success: result.success,
+        agent,
+        action,
+        startTime,
+        endTime,
+        status: result.success ? 'completed' : 'failed',
+      };
+    } catch (err) {
+      this.runningExecutions.delete(executionId);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      this.showThrottledNotice(`Failed to execute agent ${agent}: ${errorMsg}`, `error-${agent}`);
+
+      return {
+        success: false,
+        agent,
+        action,
+        startTime,
+        endTime: new Date(),
+        status: 'failed',
+      };
+    }
+  }
+
+  /**
+   * Build the prompt from an action file
+   *
+   * Reads the action markdown file and returns its content as the prompt.
+   * Actions are stored in: instances/{business}/agents/{agent}/actions/{action}.md
+   */
+  private async buildPromptFromAction(agent: string, action: string): Promise<string | null> {
+    const business = this.settings.business;
+
+    // Try the actions directory first (standard location)
+    const actionPath = path.join(
+      this.settings.personaRoot,
+      'instances',
+      business,
+      'agents',
+      agent,
+      'actions',
+      `${action}.md`
+    );
+
+    try {
+      if (fs.existsSync(actionPath)) {
+        return fs.readFileSync(actionPath, 'utf8');
+      }
+
+      // Fall back to prompts directory (legacy location)
+      const legacyPath = path.join(
+        this.settings.personaRoot,
+        'instances',
+        business,
+        'prompts',
+        agent,
+        `${action}.md`
+      );
+
+      if (fs.existsSync(legacyPath)) {
+        return fs.readFileSync(legacyPath, 'utf8');
+      }
+
+      console.error(`Action file not found: ${actionPath}`);
+      return null;
+    } catch (err) {
+      console.error('Failed to read action file:', err);
+      return null;
+    }
+  }
+
   getRunningCount(): number {
     return this.runningExecutions.size;
   }
@@ -132,6 +303,28 @@ export class ExecutionService {
     }
 
     return null;
+  }
+
+  /**
+   * Clear progress file to prevent stale data from previous agent runs
+   */
+  clearProgress(): void {
+    const progressPath = path.join(
+      this.settings.personaRoot,
+      'instances',
+      this.settings.business,
+      'state',
+      'progress.json'
+    );
+
+    try {
+      if (fs.existsSync(progressPath)) {
+        fs.unlinkSync(progressPath);
+      }
+    } catch (err) {
+      // File may not exist or be locked, that's fine
+      console.log('Could not clear progress file:', err);
+    }
   }
 
   /**

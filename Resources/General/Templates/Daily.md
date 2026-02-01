@@ -80,7 +80,23 @@ Type: Day
 
 ---
 
+### Today's Meetings
+```dataview
+TABLE
+    Subject,
+    People
+FROM "Archive/Meetings"
+WHERE
+    date(date) = date(this.file.name)
+```
+
+---
+
 ## Stream of Thought
+
+### Tasks
+<!-- Tasks that do not fit into one of the buckets below or are dumped here before being moved to the below sections ...  -->
+* 
 
 ### MCO
 <!-- Work-related thoughts, tasks, and notes - prioritized first -->
@@ -98,18 +114,6 @@ Type: Day
 
 ## Notes
 <!-- Extracted notes and references -->
-
----
-
-### Today's Meetings
-```dataview
-TABLE
-    Subject,
-    People
-FROM "Archive/Meetings"
-WHERE
-    date(date) = date(today)
-```
 
 ---
 
