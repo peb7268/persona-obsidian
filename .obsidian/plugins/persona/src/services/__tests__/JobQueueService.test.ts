@@ -473,6 +473,72 @@ describe('JobQueueService', () => {
 
       await expect(jobPromise).rejects.toThrow('Error line 1\nError line 2');
     });
+
+    it('should report missing Python dependencies error', async () => {
+      const mockProcess = new EventEmitter();
+      mockProcess.stdout = new EventEmitter();
+      mockProcess.stderr = new EventEmitter();
+      (spawn as jest.Mock).mockReturnValue(mockProcess);
+
+      const summaryPromise = service.getJobSummary();
+
+      setImmediate(() => {
+        mockProcess.stderr.emit(
+          'data',
+          'Traceback (most recent call last):\n'
+        );
+        mockProcess.stderr.emit(
+          'data',
+          '  File "bridge.py", line 8, in <module>\n'
+        );
+        mockProcess.stderr.emit(
+          'data',
+          '    from dotenv import load_dotenv\n'
+        );
+        mockProcess.stderr.emit(
+          'data',
+          "ModuleNotFoundError: No module named 'dotenv'\n"
+        );
+        mockProcess.emit('close', 1);
+      });
+
+      await expect(summaryPromise).rejects.toThrow(
+        /ModuleNotFoundError.*dotenv/
+      );
+    });
+
+    it('should report missing supabase dependency error', async () => {
+      const mockProcess = new EventEmitter();
+      mockProcess.stdout = new EventEmitter();
+      mockProcess.stderr = new EventEmitter();
+      (spawn as jest.Mock).mockReturnValue(mockProcess);
+
+      const summaryPromise = service.getJobSummary();
+
+      setImmediate(() => {
+        mockProcess.stderr.emit(
+          'data',
+          'Traceback (most recent call last):\n'
+        );
+        mockProcess.stderr.emit(
+          'data',
+          '  File "bridge.py", line 10, in <module>\n'
+        );
+        mockProcess.stderr.emit(
+          'data',
+          '    from persona.core.job_store import JobStore\n'
+        );
+        mockProcess.stderr.emit(
+          'data',
+          "ModuleNotFoundError: No module named 'supabase'\n"
+        );
+        mockProcess.emit('close', 1);
+      });
+
+      await expect(summaryPromise).rejects.toThrow(
+        /ModuleNotFoundError.*supabase/
+      );
+    });
   });
 
   describe('integration scenarios', () => {
