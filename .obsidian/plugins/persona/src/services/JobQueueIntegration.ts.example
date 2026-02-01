@@ -1,0 +1,150 @@
+/**
+ * Integration layer between existing Persona plugin and new job queue system.
+ *
+ * This file demonstrates how to update main.ts to use the JobQueueService
+ * while maintaining backward compatibility.
+ *
+ * INTEGRATION STEPS:
+ *
+ * 1. In main.ts, add import:
+ *    import { JobQueueService } from './services/JobQueueService';
+ *
+ * 2. In PersonaPlugin class, add field:
+ *    jobQueueService: JobQueueService;
+ *    useJobQueue: boolean = false; // Feature flag
+ *
+ * 3. In onload(), initialize after executionService:
+ *    this.jobQueueService = new JobQueueService(this.settings);
+ *    // Check if job queue is available
+ *    this.useJobQueue = await this.jobQueueService.checkBridgeAvailable();
+ *    if (this.useJobQueue) {
+ *      console.log('Job queue system available');
+ *    }
+ *
+ * 4. Update existing agent execution to use job queue:
+ *    Replace calls to executionService.runAgent() with:
+ *
+ *    if (this.useJobQueue) {
+ *      await this.jobQueueService.createAgentActionJob(agent, action);
+ *    } else {
+ *      await this.executionService.runAgent(agent, action);
+ *    }
+ *
+ * 5. Update research question processing to use job queue:
+ *    In processQuestions(), replace direct agent execution with:
+ *
+ *    if (this.useJobQueue) {
+ *      for (const question of questions) {
+ *        await this.jobQueueService.createResearchJob(question.content, file.path);
+ *      }
+ *    } else {
+ *      // existing logic
+ *    }
+ *
+ * 6. Update status bar to show job queue status:
+ *    In updateProgressDisplay(), add:
+ *
+ *    if (this.useJobQueue) {
+ *      const summary = await this.jobQueueService.getJobSummary();
+ *      this.statusBar?.updateJobQueueStatus(summary);
+ *    }
+ */
+
+import PersonaPlugin from '../main';
+import { TFile } from 'obsidian';
+
+/**
+ * Helper class to integrate job queue into existing plugin
+ */
+export class JobQueueIntegration {
+  constructor(private plugin: PersonaPlugin) {}
+
+  /**
+   * Process research questions using job queue
+   */
+  async processQuestionsWithQueue(file: TFile, questions: Array<{ content: string }>) {
+    for (const question of questions) {
+      try {
+        const job = await this.plugin.jobQueueService.createResearchJob(
+          question.content,
+          file.path
+        );
+        console.log(`Created research job ${job.shortId} for: ${question.content}`);
+      } catch (err) {
+        console.error('Failed to create research job:', err);
+      }
+    }
+  }
+
+  /**
+   * Run agent action through job queue
+   */
+  async runAgentWithQueue(agent: string, action: string) {
+    try {
+      const job = await this.plugin.jobQueueService.createAgentActionJob(agent, action);
+      console.log(`Created agent job ${job.shortId}: ${agent}/${action}`);
+      return job;
+    } catch (err) {
+      console.error('Failed to create agent job:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Get current system status from job queue
+   */
+  async getSystemStatus() {
+    try {
+      const summary = await this.plugin.jobQueueService.getJobSummary();
+      const running = await this.plugin.jobQueueService.getRunningJobs();
+      const pending = await this.plugin.jobQueueService.getPendingJobs();
+
+      return {
+        summary,
+        running,
+        pending,
+        hasActiveJobs: summary.running > 0 || summary.pending > 0,
+      };
+    } catch (err) {
+      console.error('Failed to get system status:', err);
+      return null;
+    }
+  }
+}
+
+/**
+ * Example migration of existing processQuestions method
+ */
+export async function processQuestionsExample(
+  plugin: PersonaPlugin,
+  file: TFile,
+  questions: Array<{ content: string }>
+) {
+  // Feature flag check
+  if (plugin.useJobQueue && plugin.jobQueueService) {
+    // New job queue path
+    const integration = new JobQueueIntegration(plugin);
+    await integration.processQuestionsWithQueue(file, questions);
+  } else {
+    // Legacy path - existing implementation
+    // ... existing code ...
+  }
+}
+
+/**
+ * Example status bar update with job queue
+ */
+export async function updateStatusBarExample(plugin: PersonaPlugin) {
+  if (plugin.useJobQueue && plugin.jobQueueService) {
+    const status = await new JobQueueIntegration(plugin).getSystemStatus();
+
+    if (status) {
+      const text = `Jobs: ${status.summary.running} running, ${status.summary.pending} pending`;
+      plugin.statusBar?.updateText(text);
+    }
+  } else {
+    // Legacy progress.json polling
+    const progress = plugin.executionService.getProgress();
+    // ... existing code ...
+  }
+}
