@@ -213,3 +213,94 @@ header_mco: PersonalMCO
 ```
 
 Tasks under `## MHM` are processed by MHM agents; tasks under `## Personal` use PersonalMCO agents.
+
+## Test Harness
+
+All tests must pass before merging. The test harness runs both TypeScript and Python tests.
+
+### Running Tests
+
+```bash
+cd .obsidian/plugins/persona
+
+# Run all tests (TypeScript + Python)
+npm run test:all
+
+# Run all tests and save artifacts
+npm run test:all:save
+# Creates: test-runs/{timestamp}/
+#   ├── run.json
+#   ├── typescript/results.json, output.txt, coverage/
+#   └── python/results.json, output.txt, coverage/
+
+# Validate test manifest
+npm run test:manifest
+
+# TypeScript only
+npm test
+
+# View latest coverage report
+open test-runs/latest/typescript/coverage/lcov-report/index.html
+```
+
+### Test Manifest
+
+All test files must be registered in `test-manifest.json` at the vault root:
+
+```json
+{
+  "typescript": {
+    "files": [
+      "src/services/__tests__/SyntaxParser.test.ts",
+      "src/services/__tests__/ExecutionService.test.ts",
+      ...
+    ]
+  },
+  "python": {
+    "files": [
+      "tests/test_job_store.py",
+      "tests/test_bridge.py"
+    ]
+  }
+}
+```
+
+**When adding a new test file:**
+1. Add the file path to `test-manifest.json`
+2. Run `npm run test:manifest` to validate
+3. CI will fail if manifest doesn't match discovered tests
+
+### Pre-commit Hooks
+
+Husky pre-commit hooks run related tests automatically:
+- TypeScript changes → Jest runs related tests
+- Python changes → pytest runs full suite
+
+Bypass with: `git commit --no-verify -m "message"`
+
+### CI/CD
+
+GitHub Actions runs on push/PR to main/develop:
+1. Manifest validation (must pass first)
+2. TypeScript tests (Node 18.x, 20.x)
+3. Python tests (Python 3.10, 3.11, 3.12)
+4. Build (after tests pass)
+
+### Test Run Artifacts
+
+Test runs are saved to `test-runs/{timestamp}/`:
+
+```
+test-runs/
+├── latest -> 2026-02-01T10-30-00/
+├── 2026-02-01T10-30-00/
+│   ├── run.json              # Summary metadata
+│   ├── typescript/
+│   │   ├── results.json      # Jest results
+│   │   ├── output.txt        # Console output
+│   │   └── coverage/         # Coverage reports
+│   └── python/
+│       ├── results.json      # pytest results
+│       ├── output.txt        # Console output
+│       └── coverage/         # Coverage reports
+```

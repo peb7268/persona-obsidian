@@ -1,4 +1,4 @@
-import { App, Modal, Setting } from 'obsidian';
+import { App, Modal, Setting, setIcon } from 'obsidian';
 import type PersonaPlugin from '../main';
 import { AgentDefinition, MHM_AGENTS } from '../types';
 import * as path from 'path';
@@ -19,16 +19,17 @@ export class AgentModal extends Modal {
     contentEl.empty();
     contentEl.addClass('persona-modal');
 
-    // Header
-    contentEl.createEl('h2', { text: 'Persona Agent Runner' });
-
-    // Instance indicator
-    const instanceInfo = contentEl.createDiv({ cls: 'persona-instance-info' });
-    instanceInfo.createEl('span', { text: `Instance: ` });
-    instanceInfo.createEl('strong', { text: this.plugin.settings.business });
+    // Header with icon
+    const header = contentEl.createDiv({ cls: 'ar-header' });
+    const headerLeft = header.createDiv({ cls: 'ar-header-left' });
+    const headerIcon = headerLeft.createSpan({ cls: 'ar-header-icon' });
+    setIcon(headerIcon, 'bot');
+    const headerText = headerLeft.createDiv({ cls: 'ar-header-text' });
+    headerText.createEl('h2', { text: 'Agent Runner' });
+    headerText.createSpan({ text: this.plugin.settings.business, cls: 'ar-instance-badge' });
 
     // Running agents section
-    const runningSection = contentEl.createDiv({ cls: 'persona-running-section' });
+    const runningSection = contentEl.createDiv({ cls: 'ar-running-section' });
     runningSection.id = 'persona-running-agents';
     this.renderRunningAgents(runningSection);
 
@@ -41,93 +42,124 @@ export class AgentModal extends Modal {
     }, 2000);
 
     // Agent list by tier
-    this.renderAgentList(contentEl);
+    const agentsContainer = contentEl.createDiv({ cls: 'ar-agents-container' });
+    this.renderAgentList(agentsContainer);
 
-    // Selected agent display
-    const selectedDiv = contentEl.createDiv({ cls: 'persona-selected' });
+    // Selected agent display and run button
+    const actionBar = contentEl.createDiv({ cls: 'ar-action-bar' });
+
+    const selectedDiv = actionBar.createDiv({ cls: 'ar-selected' });
     selectedDiv.id = 'persona-selected-display';
-    selectedDiv.setText('Select an agent and action above');
+    const selectIcon = selectedDiv.createSpan({ cls: 'ar-select-icon' });
+    setIcon(selectIcon, 'mouse-pointer-click');
+    selectedDiv.createSpan({ text: 'Select an agent action', cls: 'ar-select-text' });
 
-    // Run button
-    new Setting(contentEl)
-      .addButton((btn) =>
-        btn
-          .setButtonText('Run Agent')
-          .setCta()
-          .onClick(() => this.runSelected())
-      )
-      .addButton((btn) =>
-        btn.setButtonText('Cancel').onClick(() => this.close())
-      );
+    const actionButtons = actionBar.createDiv({ cls: 'ar-action-buttons' });
 
-    // Separator
-    contentEl.createEl('hr', { cls: 'persona-modal-divider' });
+    const runBtn = actionButtons.createEl('button', { cls: 'ar-btn ar-btn-primary' });
+    const runIcon = runBtn.createSpan({ cls: 'ar-btn-icon' });
+    setIcon(runIcon, 'play');
+    runBtn.createSpan({ text: 'Run Agent' });
+    runBtn.onclick = () => this.runSelected();
 
-    // Settings section
-    const settingsSection = contentEl.createDiv({ cls: 'persona-modal-settings' });
-    settingsSection.createEl('h4', { text: 'Settings' });
+    const cancelBtn = actionButtons.createEl('button', { cls: 'ar-btn' });
+    cancelBtn.createSpan({ text: 'Cancel' });
+    cancelBtn.onclick = () => this.close();
+
+    // Settings section (collapsible)
+    const settingsSection = contentEl.createDiv({ cls: 'ar-settings-section' });
+    const settingsHeader = settingsSection.createDiv({ cls: 'ar-settings-header' });
+    const settingsToggle = settingsHeader.createSpan({ cls: 'ar-settings-toggle' });
+    setIcon(settingsToggle, 'chevron-down');
+    settingsHeader.createSpan({ text: 'Settings', cls: 'ar-settings-title' });
+
+    const settingsContent = settingsSection.createDiv({ cls: 'ar-settings-content' });
+
+    // Toggle settings visibility
+    let settingsExpanded = false;
+    settingsHeader.onclick = () => {
+      settingsExpanded = !settingsExpanded;
+      settingsContent.classList.toggle('expanded', settingsExpanded);
+      settingsToggle.empty();
+      setIcon(settingsToggle, settingsExpanded ? 'chevron-up' : 'chevron-down');
+    };
 
     // Open Logs button
-    new Setting(settingsSection)
-      .setName('Agent Logs')
-      .setDesc('View execution logs for debugging')
-      .addButton((btn) =>
-        btn
-          .setButtonText('Open Logs Folder')
-          .onClick(() => {
-            const logsPath = path.join(
-              this.plugin.settings.personaRoot,
-              'instances',
-              this.plugin.settings.business,
-              'logs',
-              'agents'
-            );
-            require('electron').shell.openPath(logsPath);
-          })
+    const logsRow = settingsContent.createDiv({ cls: 'ar-setting-row' });
+    const logsInfo = logsRow.createDiv({ cls: 'ar-setting-info' });
+    const logsIcon = logsInfo.createSpan({ cls: 'ar-setting-icon' });
+    setIcon(logsIcon, 'folder-open');
+    const logsText = logsInfo.createDiv();
+    logsText.createDiv({ text: 'Agent Logs', cls: 'ar-setting-name' });
+    logsText.createDiv({ text: 'View execution logs for debugging', cls: 'ar-setting-desc' });
+    const logsBtn = logsRow.createEl('button', { cls: 'ar-btn ar-btn-small' });
+    const logsBtnIcon = logsBtn.createSpan({ cls: 'ar-btn-icon' });
+    setIcon(logsBtnIcon, 'external-link');
+    logsBtn.createSpan({ text: 'Open' });
+    logsBtn.onclick = () => {
+      const logsPath = path.join(
+        this.plugin.settings.personaRoot,
+        'instances',
+        this.plugin.settings.business,
+        'logs',
+        'agents'
       );
+      require('electron').shell.openPath(logsPath);
+    };
 
     // Polling interval setting
-    new Setting(settingsSection)
-      .setName('Auto-process interval')
-      .setDesc('How often to check for research questions')
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption('0', 'Disabled')
-          .addOption('5', '5 minutes')
-          .addOption('10', '10 minutes')
-          .addOption('15', '15 minutes')
-          .addOption('30', '30 minutes')
-          .addOption('60', '1 hour')
-          .setValue(
-            this.plugin.settings.pollingEnabled
-              ? String(this.plugin.settings.pollingIntervalMinutes)
-              : '0'
-          )
-          .onChange(async (value) => {
-            if (value === '0') {
-              this.plugin.settings.pollingEnabled = false;
-            } else {
-              this.plugin.settings.pollingEnabled = true;
-              this.plugin.settings.pollingIntervalMinutes = parseInt(value);
-            }
-            await this.plugin.saveSettings();
-            this.plugin.updatePolling();
-          })
-      );
+    const pollingRow = settingsContent.createDiv({ cls: 'ar-setting-row' });
+    const pollingInfo = pollingRow.createDiv({ cls: 'ar-setting-info' });
+    const pollingIcon = pollingInfo.createSpan({ cls: 'ar-setting-icon' });
+    setIcon(pollingIcon, 'timer');
+    const pollingText = pollingInfo.createDiv();
+    pollingText.createDiv({ text: 'Auto-process interval', cls: 'ar-setting-name' });
+    pollingText.createDiv({ text: 'Check for research questions', cls: 'ar-setting-desc' });
+    const pollingSelect = pollingRow.createEl('select', { cls: 'ar-select' });
+    const pollingOptions = [
+      { value: '0', label: 'Disabled' },
+      { value: '5', label: '5 min' },
+      { value: '10', label: '10 min' },
+      { value: '15', label: '15 min' },
+      { value: '30', label: '30 min' },
+      { value: '60', label: '1 hour' },
+    ];
+    pollingOptions.forEach(opt => {
+      pollingSelect.createEl('option', { value: opt.value, text: opt.label });
+    });
+    pollingSelect.value = this.plugin.settings.pollingEnabled
+      ? String(this.plugin.settings.pollingIntervalMinutes)
+      : '0';
+    pollingSelect.onchange = async () => {
+      const value = pollingSelect.value;
+      if (value === '0') {
+        this.plugin.settings.pollingEnabled = false;
+      } else {
+        this.plugin.settings.pollingEnabled = true;
+        this.plugin.settings.pollingIntervalMinutes = parseInt(value);
+      }
+      await this.plugin.saveSettings();
+      this.plugin.updatePolling();
+    };
 
     // Auto-process on save toggle
-    new Setting(settingsSection)
-      .setName('Process on save')
-      .setDesc('Auto-process questions when daily note is saved')
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.autoProcessOnSave)
-          .onChange(async (value) => {
-            this.plugin.settings.autoProcessOnSave = value;
-            await this.plugin.saveSettings();
-            this.plugin.updateFileWatcher();
-          })
-      );
+    const saveRow = settingsContent.createDiv({ cls: 'ar-setting-row' });
+    const saveInfo = saveRow.createDiv({ cls: 'ar-setting-info' });
+    const saveIcon = saveInfo.createSpan({ cls: 'ar-setting-icon' });
+    setIcon(saveIcon, 'save');
+    const saveText = saveInfo.createDiv();
+    saveText.createDiv({ text: 'Process on save', cls: 'ar-setting-name' });
+    saveText.createDiv({ text: 'Auto-process when daily note saved', cls: 'ar-setting-desc' });
+    const saveToggle = saveRow.createEl('button', {
+      cls: `ar-toggle ${this.plugin.settings.autoProcessOnSave ? 'active' : ''}`
+    });
+    const toggleKnob = saveToggle.createDiv({ cls: 'ar-toggle-knob' });
+    saveToggle.onclick = async () => {
+      this.plugin.settings.autoProcessOnSave = !this.plugin.settings.autoProcessOnSave;
+      saveToggle.classList.toggle('active', this.plugin.settings.autoProcessOnSave);
+      await this.plugin.saveSettings();
+      this.plugin.updateFileWatcher();
+    };
   }
 
   private renderRunningAgents(container: HTMLElement) {
@@ -135,26 +167,35 @@ export class AgentModal extends Modal {
     const running = this.plugin.executionService.getRunningExecutions();
 
     if (running.length === 0) {
-      container.addClass('persona-running-empty');
-      container.removeClass('persona-running-active');
-      container.createEl('span', { text: 'No agents running', cls: 'persona-running-none' });
+      container.addClass('ar-running-empty');
+      container.removeClass('ar-running-active');
+      const emptyState = container.createDiv({ cls: 'ar-running-empty-state' });
+      const emptyIcon = emptyState.createSpan({ cls: 'ar-running-empty-icon' });
+      setIcon(emptyIcon, 'circle-dot');
+      emptyState.createSpan({ text: 'No agents running', cls: 'ar-running-empty-text' });
     } else {
-      container.removeClass('persona-running-empty');
-      container.addClass('persona-running-active');
+      container.removeClass('ar-running-empty');
+      container.addClass('ar-running-active');
 
       // Header with count
-      const header = container.createDiv({ cls: 'persona-running-header' });
-      header.createSpan({ cls: 'persona-spinner' });
-      header.createSpan({ text: `${running.length} agent${running.length > 1 ? 's' : ''} running` });
+      const header = container.createDiv({ cls: 'ar-running-header' });
+      header.createSpan({ cls: 'ar-pulse-dot' });
+      header.createSpan({ text: `${running.length} agent${running.length > 1 ? 's' : ''} running`, cls: 'ar-running-count' });
 
       // List running agents
-      const list = container.createDiv({ cls: 'persona-running-list' });
+      const list = container.createDiv({ cls: 'ar-running-list' });
       for (const exec of running) {
-        const item = list.createDiv({ cls: 'persona-running-item' });
+        const item = list.createDiv({ cls: 'ar-running-item' });
+        const itemIcon = item.createSpan({ cls: 'ar-running-item-icon' });
+        setIcon(itemIcon, 'bot');
+        const itemText = item.createDiv({ cls: 'ar-running-item-text' });
+        itemText.createSpan({ text: exec.agent, cls: 'ar-running-agent' });
+        itemText.createSpan({ text: exec.action, cls: 'ar-running-action' });
         const elapsed = Math.round((Date.now() - exec.startTime.getTime()) / 1000);
-        item.createSpan({ text: `${exec.agent}`, cls: 'persona-running-agent' });
-        item.createSpan({ text: `: ${exec.action}`, cls: 'persona-running-action' });
-        item.createSpan({ text: ` (${elapsed}s)`, cls: 'persona-running-time' });
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        const timeText = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+        item.createSpan({ text: timeText, cls: 'ar-running-time' });
       }
     }
   }
@@ -162,21 +203,27 @@ export class AgentModal extends Modal {
   private renderAgentList(container: HTMLElement) {
     // Group agents by tier
     const tiers = ['executive', 'management', 'specialist', 'support'] as const;
-    const tierLabels: Record<string, string> = {
-      executive: 'Executive',
-      management: 'Management',
-      specialist: 'Specialist',
-      support: 'Support',
+    const tierConfig: Record<string, { label: string; icon: string; color: string }> = {
+      executive: { label: 'Executive', icon: 'crown', color: '#ffc107' },
+      management: { label: 'Management', icon: 'users', color: '#2196f3' },
+      specialist: { label: 'Specialist', icon: 'wrench', color: '#4caf50' },
+      support: { label: 'Support', icon: 'help-circle', color: '#9c27b0' },
     };
 
     for (const tier of tiers) {
       const tierAgents = MHM_AGENTS.filter((a) => a.tier === tier);
       if (tierAgents.length === 0) continue;
 
-      const tierSection = container.createDiv({ cls: 'persona-tier-section' });
-      tierSection.createEl('h3', { text: tierLabels[tier] });
+      const config = tierConfig[tier];
+      const tierSection = container.createDiv({ cls: `ar-tier-section ar-tier-${tier}` });
 
-      const agentList = tierSection.createDiv({ cls: 'persona-agent-list' });
+      const tierHeader = tierSection.createDiv({ cls: 'ar-tier-header' });
+      const tierIcon = tierHeader.createSpan({ cls: 'ar-tier-icon' });
+      setIcon(tierIcon, config.icon);
+      tierHeader.createSpan({ text: config.label, cls: 'ar-tier-label' });
+      tierHeader.createSpan({ text: `${tierAgents.length}`, cls: 'ar-tier-count' });
+
+      const agentList = tierSection.createDiv({ cls: 'ar-agent-list' });
 
       for (const agent of tierAgents) {
         this.renderAgentCard(agentList, agent);
@@ -185,23 +232,26 @@ export class AgentModal extends Modal {
   }
 
   private renderAgentCard(container: HTMLElement, agent: AgentDefinition) {
-    const card = container.createDiv({ cls: 'persona-agent-card' });
+    const card = container.createDiv({ cls: 'ar-agent-card' });
 
-    const header = card.createDiv({ cls: 'persona-agent-header' });
-    header.createEl('strong', { text: agent.name });
-    header.createEl('span', { text: ` - ${agent.role}`, cls: 'persona-agent-role' });
+    const header = card.createDiv({ cls: 'ar-agent-header' });
+    const agentIcon = header.createSpan({ cls: 'ar-agent-icon' });
+    setIcon(agentIcon, 'bot');
+    const headerText = header.createDiv({ cls: 'ar-agent-header-text' });
+    headerText.createSpan({ text: agent.name, cls: 'ar-agent-name' });
+    headerText.createSpan({ text: agent.role, cls: 'ar-agent-role' });
 
-    const actionsDiv = card.createDiv({ cls: 'persona-agent-actions' });
+    const actionsDiv = card.createDiv({ cls: 'ar-agent-actions' });
 
     for (const action of agent.actions) {
-      const btn = actionsDiv.createEl('button', {
-        text: action,
-        cls: 'persona-action-btn',
-      });
+      const btn = actionsDiv.createEl('button', { cls: 'ar-action-btn' });
+      const btnIcon = btn.createSpan({ cls: 'ar-action-icon' });
+      setIcon(btnIcon, 'play');
+      btn.createSpan({ text: action });
 
       btn.addEventListener('click', () => {
         // Clear previous selection
-        container.parentElement?.querySelectorAll('.persona-action-btn.selected').forEach((el) => {
+        container.parentElement?.querySelectorAll('.ar-action-btn.selected').forEach((el) => {
           el.removeClass('selected');
         });
 
@@ -213,8 +263,14 @@ export class AgentModal extends Modal {
         // Update display
         const display = document.getElementById('persona-selected-display');
         if (display) {
-          display.setText(`Selected: ${agent.name} → ${action}`);
+          display.empty();
           display.addClass('has-selection');
+          const checkIcon = display.createSpan({ cls: 'ar-select-icon' });
+          setIcon(checkIcon, 'check-circle');
+          const selectText = display.createSpan({ cls: 'ar-select-text' });
+          selectText.createSpan({ text: agent.name, cls: 'ar-select-agent' });
+          selectText.createSpan({ text: ' → ' });
+          selectText.createSpan({ text: action, cls: 'ar-select-action' });
         }
       });
     }

@@ -10,7 +10,10 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ui": "jest --testPathPattern=ui",
-    "test:services": "jest --testPathPattern=services"
+    "test:services": "jest --testPathPattern=services",
+    "test:all": "../../../Projects/Persona/scripts/test-all.sh",
+    "test:all:save": "../../../Projects/Persona/scripts/test-all.sh --save",
+    "test:manifest": "../../../Projects/Persona/scripts/validate-manifest.sh"
   },
   "keywords": [
     "obsidian",

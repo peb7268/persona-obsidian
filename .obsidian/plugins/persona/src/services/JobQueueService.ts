@@ -15,6 +15,7 @@ export interface JobInfo {
   error?: string;
   result?: any;
   pid?: number;
+  exitCode?: number;
 }
 
 export interface JobLog {
@@ -55,13 +56,50 @@ export class JobQueueService {
   }
 
   /**
+   * Build environment for Python subprocess.
+   * Electron apps don't inherit terminal environment, so we must construct it.
+   */
+  private buildPythonEnv(): NodeJS.ProcessEnv {
+    const pythonDir = path.join(this.settings.personaRoot, 'python');
+
+    // Derive site-packages from configured Python path
+    const pythonPath = this.settings.pythonPath;
+    const pythonVersionMatch = pythonPath.match(/Python\.framework\/Versions\/([\d.]+)/);
+    const pythonVersion = pythonVersionMatch ? pythonVersionMatch[1] : '3.12';
+    const sitePackages = `/Library/Frameworks/Python.framework/Versions/${pythonVersion}/lib/python${pythonVersion}/site-packages`;
+
+    // Fallback PATH for Electron context
+    const pythonBinDir = path.dirname(pythonPath);
+    const defaultPath = [
+      pythonBinDir,
+      '/usr/local/bin',
+      '/usr/bin',
+      '/bin',
+      '/opt/homebrew/bin',
+    ].join(':');
+
+    return {
+      ...process.env,
+      PATH: process.env.PATH || defaultPath,
+      PYTHONPATH: [pythonDir, sitePackages].join(':'),
+      PYTHONUNBUFFERED: '1',
+      // Supabase credentials (bypasses dotenv requirement)
+      SUPABASE_URL: this.settings.supabaseUrl,
+      SUPABASE_KEY: this.settings.supabaseKey,
+    };
+  }
+
+  /**
    * Call the Python bridge script
    */
   private async callBridge(command: string, ...args: string[]): Promise<any> {
     return new Promise((resolve, reject) => {
-      const pythonProcess = spawn('python3', [this.bridgePath, command, ...args], {
-        cwd: path.join(this.settings.personaRoot, 'python'),
-        env: { ...process.env },
+      const pythonDir = path.join(this.settings.personaRoot, 'python');
+      const pythonExecutable = this.settings.pythonPath;
+
+      const pythonProcess = spawn(pythonExecutable, [this.bridgePath, command, ...args], {
+        cwd: pythonDir,
+        env: this.buildPythonEnv(),
       });
 
       let stdout = '';
@@ -77,14 +115,17 @@ export class JobQueueService {
 
       pythonProcess.on('close', (code) => {
         if (code !== 0) {
-          reject(new Error(`Bridge script failed: ${stderr}`));
+          // Include both stdout and stderr for better debugging
+          // Python bridge may return JSON errors on stdout
+          const errorDetails = stderr || stdout || '(no output)';
+          reject(new Error(`Bridge script failed (exit ${code}): ${errorDetails}`));
           return;
         }
 
         try {
           const result = JSON.parse(stdout);
           if (result.error) {
-            reject(new Error(result.error));
+            reject(new Error(`Bridge error: ${result.error}`));
           } else {
             resolve(result);
           }
@@ -205,6 +246,31 @@ export class JobQueueService {
   }
 
   /**
+   * Get completed jobs (recently finished)
+   */
+  async getCompletedJobs(limit?: number): Promise<JobInfo[]> {
+    const result = await this.callBridge('get_completed_jobs', String(limit || 20));
+    return result.jobs || [];
+  }
+
+  /**
+   * Get hung jobs (running longer than threshold)
+   */
+  async getHungJobs(thresholdMinutes?: number): Promise<JobInfo[]> {
+    const threshold = thresholdMinutes || 5;
+    const result = await this.callBridge('get_hung_jobs', String(threshold));
+    return result.jobs || [];
+  }
+
+  /**
+   * Get failed jobs only (subset of completed)
+   */
+  async getFailedJobs(limit?: number): Promise<JobInfo[]> {
+    const result = await this.callBridge('get_failed_jobs', String(limit || 20));
+    return result.jobs || [];
+  }
+
+  /**
    * Get logs for a job
    */
   async getJobLogs(jobId: string, limit?: number): Promise<JobLog[]> {
@@ -213,10 +279,37 @@ export class JobQueueService {
   }
 
   /**
+   * Get logs from local log file (fallback when Supabase logs are empty)
+   */
+  async getLocalLogs(business: string, agent: string, date: string): Promise<{ logs: JobLog[]; source: string; exists?: boolean }> {
+    const result = await this.callBridge('get_local_logs', business, agent, date);
+    return {
+      logs: result.logs || [],
+      source: 'local',
+      exists: result.exists ?? false
+    };
+  }
+
+  /**
    * Get summary of all jobs by status
    */
   async getJobSummary(): Promise<JobSummary> {
     return this.callBridge('get_job_summary');
+  }
+
+  /**
+   * Update job status
+   * Returns success/failure to allow caller to handle retries
+   */
+  async updateJobStatus(jobId: string, status: string, error?: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const payload = { status, error };
+      await this.callBridge('update_job_status', jobId, JSON.stringify(payload));
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      return { success: false, error: errorMessage };
+    }
   }
 
   /**
@@ -230,5 +323,28 @@ export class JobQueueService {
       console.error('Bridge not available:', err);
       return false;
     }
+  }
+
+  /**
+   * Get daily agent performance metrics
+   */
+  async getAgentDailyPerformance(agent?: string, days?: number): Promise<{
+    metrics: Array<{
+      date: string;
+      agent: string;
+      jobsCompleted: number;
+      successful: number;
+      failed: number;
+      avgDurationSeconds: number;
+      minDurationSeconds: number;
+      maxDurationSeconds: number;
+    }>;
+  }> {
+    const result = await this.callBridge(
+      'get_agent_daily_performance',
+      agent || '',
+      String(days || 7)
+    );
+    return { metrics: result.metrics || [] };
   }
 }

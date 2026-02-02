@@ -39,3 +39,6 @@ export const ExtraButtonComponent = jest.fn();
 export const ColorComponent = jest.fn();
 export const SearchComponent = jest.fn();
 export const ValueComponent = jest.fn();
+
+// Utility functions
+export const setIcon = jest.fn();

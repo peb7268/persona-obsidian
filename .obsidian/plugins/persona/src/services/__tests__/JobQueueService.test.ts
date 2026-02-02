@@ -25,6 +25,9 @@ describe('JobQueueService', () => {
       zettelkastenPath: 'Resources/Zettlekasten',
       duplicateThreshold: 80,
       defaultTags: ['test'],
+      pythonPath: '/usr/bin/python3',
+      supabaseUrl: 'http://localhost:54321',
+      supabaseKey: 'test-key',
     };
 
     service = new JobQueueService(mockSettings);
@@ -106,7 +109,7 @@ describe('JobQueueService', () => {
       );
 
       expect(spawn).toHaveBeenCalledWith(
-        'python3',
+        expect.stringContaining('python'),
         expect.arrayContaining([
           expect.stringContaining('bridge.py'),
           'create_job',
@@ -256,7 +259,7 @@ describe('JobQueueService', () => {
       expect(result.pid).toBe(12345);
 
       expect(spawn).toHaveBeenCalledWith(
-        'python3',
+        expect.stringContaining('python'),
         expect.arrayContaining(['get_job_status', 'abc12345']),
         expect.any(Object)
       );
@@ -293,7 +296,7 @@ describe('JobQueueService', () => {
       await service.getPendingJobs('researcher');
 
       expect(spawn).toHaveBeenCalledWith(
-        'python3',
+        expect.stringContaining('python'),
         expect.arrayContaining(['get_pending_jobs', 'researcher']),
         expect.any(Object)
       );
@@ -332,7 +335,7 @@ describe('JobQueueService', () => {
       expect(result[0].message).toBe('Started');
 
       expect(spawn).toHaveBeenCalledWith(
-        'python3',
+        expect.stringContaining('python'),
         expect.arrayContaining(['get_job_logs', 'abc12345', '50']),
         expect.any(Object)
       );
@@ -344,7 +347,7 @@ describe('JobQueueService', () => {
       await service.getJobLogs('abc12345', 100);
 
       expect(spawn).toHaveBeenCalledWith(
-        'python3',
+        expect.stringContaining('python'),
         expect.arrayContaining(['get_job_logs', 'abc12345', '100']),
         expect.any(Object)
       );
@@ -372,7 +375,7 @@ describe('JobQueueService', () => {
       expect(result.hung).toBe(0);
 
       expect(spawn).toHaveBeenCalledWith(
-        'python3',
+        expect.stringContaining('python'),
         expect.arrayContaining(['get_job_summary']),
         expect.any(Object)
       );

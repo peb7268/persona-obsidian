@@ -226,5 +226,68 @@ export class PersonaSettingTab extends PluginSettingTab {
             this.plugin.executionService?.reinitializeProviders();
           })
       );
+
+    // Python Bridge section
+    containerEl.createEl('h3', { text: 'Python Bridge' });
+
+    new Setting(containerEl)
+      .setName('Python executable path')
+      .setDesc('Absolute path to Python 3 with python-dotenv installed')
+      .addText((text) =>
+        text
+          .setPlaceholder('/usr/bin/python3')
+          .setValue(this.plugin.settings.pythonPath)
+          .onChange(async (value) => {
+            this.plugin.settings.pythonPath = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // Job Queue (Supabase) section
+    containerEl.createEl('h3', { text: 'Job Queue (Supabase)' });
+
+    new Setting(containerEl)
+      .setName('Supabase URL')
+      .setDesc('URL for Supabase instance (local: 127.0.0.1:54321)')
+      .addText((text) =>
+        text
+          .setPlaceholder('http://127.0.0.1:54321')
+          .setValue(this.plugin.settings.supabaseUrl)
+          .onChange(async (value) => {
+            this.plugin.settings.supabaseUrl = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Supabase Service Key')
+      .setDesc('Service role key (keep secret)')
+      .addText((text) => {
+        text
+          .setPlaceholder('eyJhbGciOiJ...')
+          .setValue(this.plugin.settings.supabaseKey)
+          .onChange(async (value) => {
+            this.plugin.settings.supabaseKey = value;
+            await this.plugin.saveSettings();
+          });
+        text.inputEl.type = 'password';
+      });
+
+    new Setting(containerEl)
+      .setName('Hung job threshold')
+      .setDesc('Minutes after which a running job is considered hung')
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption('5', '5 minutes')
+          .addOption('10', '10 minutes')
+          .addOption('15', '15 minutes')
+          .addOption('30', '30 minutes')
+          .addOption('60', '1 hour')
+          .setValue(String(this.plugin.settings.hungThresholdMinutes))
+          .onChange(async (value) => {
+            this.plugin.settings.hungThresholdMinutes = parseInt(value);
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }

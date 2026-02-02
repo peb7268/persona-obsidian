@@ -1,6 +1,26 @@
 {
   "recentFiles": [
     {
+      "basename": "2026-02-01",
+      "path": "Resources/Agenda/Daily/2026-02-01.md"
+    },
+    {
+      "basename": "2026-01-23",
+      "path": "Resources/Agenda/Daily/2026-01-23.md"
+    },
+    {
+      "basename": "Q-wordpress-headless-testing",
+      "path": "Resources/Zettlekasten/Q-wordpress-headless-testing.md"
+    },
+    {
+      "basename": "Home",
+      "path": "Home.md"
+    },
+    {
+      "basename": "2026-W6",
+      "path": "Resources/Agenda/Weekly/2026-W6.md"
+    },
+    {
       "basename": "Running Ollama locally on Mac + Ollama Launch",
       "path": "Resources/Zettlekasten/Running Ollama locally on Mac + Ollama Launch.md"
     },
@@ -53,16 +73,8 @@
       "path": "Resources/Agenda/Daily/2026-01-21.md"
     },
     {
-      "basename": "Home",
-      "path": "Home.md"
-    },
-    {
       "basename": "2026-01-25",
       "path": "Resources/Agenda/Daily/2026-01-25.md"
-    },
-    {
-      "basename": "2026-01-23",
-      "path": "Resources/Agenda/Daily/2026-01-23.md"
     },
     {
       "basename": "2026-W4",
@@ -187,18 +199,6 @@
     {
       "basename": "Vadim Polosatov",
       "path": "Resources/People/Vadim Polosatov.md"
-    },
-    {
-      "basename": "2026-01-14 - saris.ai",
-      "path": "Archive/Meetings/ Ad-Hoc/2026-01-14 - saris.ai.md"
-    },
-    {
-      "basename": "SarrisAI",
-      "path": "Resources/Zettlekasten/SarrisAI.md"
-    },
-    {
-      "basename": "Implementation-Checklist",
-      "path": "Projects/Personal/nas-obsidian/Projects/Headless-Obsidian/Implementation-Checklist.md"
     }
   ],
   "omittedPaths": [],

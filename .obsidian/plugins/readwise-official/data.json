@@ -5,7 +5,7 @@
   "triggerOnLoad": true,
   "isSyncing": false,
   "lastSyncFailed": false,
-  "lastSavedStatusID": 24278760,
+  "lastSavedStatusID": 24289974,
   "currentSyncStatusID": 0,
   "refreshBooks": true,
   "booksToRefresh": [],
@@ -835,7 +835,8 @@
     "Resources/Learning/Podcasts/Why Opus 4.5 Just Became the Most Influential AI Model.md": "57623169",
     "Resources/Learning/Podcasts/#1047 - Jonathan Swanson - The Obvious Strategy to Take Back Your Time.md": "57686775",
     "Resources/Learning/Podcasts/How Andrew Wilkinson Uses Opus 4.5 in His Work and Life.md": "57788793",
-    "Resources/Learning/Articles/Building Agentic AI Systems.md": "56941282"
+    "Resources/Learning/Articles/Building Agentic AI Systems.md": "56941282",
+    "Resources/Learning/Podcasts/#490 – State of AI in 2026 LLMs, Coding, Scaling Laws, China, Agents, GPUs, AGI.md": "57990401"
   },
   "reimportShowConfirmation": true
 }

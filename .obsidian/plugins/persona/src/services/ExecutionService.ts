@@ -4,19 +4,22 @@ import { PersonaSettings, ExecutionResult, ProgressState } from '../types';
 import { ProviderRegistry } from '../providers/ProviderRegistry';
 import { AgentDefinitionParser } from './AgentDefinitionParser';
 import { AgentProviderOverride } from '../providers/types';
+import { JobQueueService, JobInfo } from './JobQueueService';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export class ExecutionService {
-  private runningExecutions: Map<string, { agent: string; action: string; startTime: Date }> = new Map();
+  private runningExecutions: Map<string, { agent: string; action: string; startTime: Date; jobId?: string }> = new Map();
   private lastNoticeTime: Map<string, number> = new Map();
   private readonly NOTICE_THROTTLE_MS = 2000;
   private providerRegistry: ProviderRegistry;
   private agentParser: AgentDefinitionParser;
+  private jobQueueService: JobQueueService | null = null;
 
-  constructor(private settings: PersonaSettings) {
+  constructor(private settings: PersonaSettings, jobQueueService?: JobQueueService) {
     this.providerRegistry = new ProviderRegistry(settings.providers, settings.defaultProvider);
     this.agentParser = new AgentDefinitionParser();
+    this.jobQueueService = jobQueueService || null;
   }
 
   /**
@@ -45,6 +48,51 @@ export class ExecutionService {
     }
   }
 
+  /**
+   * Update job status with retry logic and exponential backoff
+   */
+  private async updateJobStatusWithRetry(
+    jobId: string,
+    status: string,
+    error?: string,
+    maxRetries: number = 3
+  ): Promise<boolean> {
+    if (!this.jobQueueService) return false;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const result = await this.jobQueueService.updateJobStatus(jobId, status, error);
+      if (result.success) return true;
+
+      console.warn(`Job status update attempt ${attempt + 1} failed:`, result.error);
+
+      // Exponential backoff: 1s, 2s, 4s
+      if (attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Log system-level errors to persistent log file
+   */
+  private logSystemError(message: string): void {
+    const logDir = path.join(this.settings.personaRoot, 'instances', this.settings.business, 'logs');
+    const logFile = path.join(logDir, 'system.log');
+    const timestamp = new Date().toISOString();
+    const line = `[${timestamp}] ERROR: ${message}\n`;
+
+    try {
+      // Ensure log directory exists
+      if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+      }
+      fs.appendFileSync(logFile, line);
+    } catch (err) {
+      console.error('Failed to write to system log:', err);
+    }
+  }
+
   async runAgent(agent: string, action: string, instanceOverride?: string): Promise<ExecutionResult> {
     // Prevent duplicate runs of the same agent
     if (this.isAgentRunning(agent)) {
@@ -63,8 +111,20 @@ export class ExecutionService {
     const executionId = `${agent}-${Date.now()}`;
     const startTime = new Date();
 
+    // Create job in Supabase for tracking
+    let jobInfo: JobInfo | undefined;
+    if (this.jobQueueService) {
+      try {
+        jobInfo = await this.jobQueueService.createAgentActionJob(agent, action, 300);
+        console.log(`Created job ${jobInfo.shortId} for ${agent}:${action}`);
+      } catch (err) {
+        console.warn('Failed to create job in queue:', err);
+        // Continue even if job creation fails - don't block agent execution
+      }
+    }
+
     // Track running execution
-    this.runningExecutions.set(executionId, { agent, action, startTime });
+    this.runningExecutions.set(executionId, { agent, action, startTime, jobId: jobInfo?.shortId });
 
     return new Promise((resolve) => {
       const childProcess = spawn('bash', [scriptPath, business, agent, action], {
@@ -72,16 +132,36 @@ export class ExecutionService {
         env: { ...process.env },
       });
 
+      // Mark job as running immediately after spawn (Phase 2)
+      if (jobInfo && this.jobQueueService) {
+        this.updateJobStatusWithRetry(jobInfo.shortId, 'running').catch(() => {
+          // Non-critical - job will still run, just won't show as "running"
+        });
+      }
+
       let stderr = '';
 
       childProcess.stderr.on('data', (data) => {
         stderr += data.toString();
       });
 
-      childProcess.on('close', (code) => {
+      childProcess.on('close', async (code) => {
         this.runningExecutions.delete(executionId);
         const endTime = new Date();
         const durationSec = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+
+        // Update job status in Supabase with retry logic
+        if (jobInfo) {
+          const status = code === 0 ? 'completed' : 'failed';
+          const error = code !== 0 ? `Exit code: ${code}` : undefined;
+          const success = await this.updateJobStatusWithRetry(jobInfo.shortId, status, error);
+
+          if (!success) {
+            // Surface failure to user - they need to know their job tracking is broken
+            new Notice(`Warning: Failed to update job ${jobInfo.shortId} status after 3 retries`);
+            this.logSystemError(`Job ${jobInfo.shortId} status update failed after 3 retries (status: ${status})`);
+          }
+        }
 
         if (code === 0) {
           this.showThrottledNotice(`Agent ${agent} completed in ${durationSec}s`, `complete-${agent}`);
@@ -99,8 +179,18 @@ export class ExecutionService {
         });
       });
 
-      childProcess.on('error', (err) => {
+      childProcess.on('error', async (err) => {
         this.runningExecutions.delete(executionId);
+
+        // Update job status on error with retry logic
+        if (jobInfo) {
+          const success = await this.updateJobStatusWithRetry(jobInfo.shortId, 'failed', err.message);
+          if (!success) {
+            new Notice(`Warning: Failed to update job ${jobInfo.shortId} status after 3 retries`);
+            this.logSystemError(`Job ${jobInfo.shortId} status update failed after 3 retries (error: ${err.message})`);
+          }
+        }
+
         this.showThrottledNotice(`Failed to start agent ${agent}: ${err.message}`, `error-${agent}`);
 
         resolve({

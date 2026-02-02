@@ -1,0 +1,4 @@
+[console_scripts]
+persona = persona.cli:cli
+persona-monitor = persona.monitor:main
+persona-worker = persona.worker:main

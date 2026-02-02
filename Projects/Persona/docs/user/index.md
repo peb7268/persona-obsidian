@@ -6,6 +6,15 @@ Persona is an agent factory that creates markdown-driven agents to run businesse
 
 ## Guides
 
+### [Job Queue Guide](job-queue-guide.md)
+
+Understand the job tracking and observability system:
+- Job lifecycle (pending → running → completed)
+- Using the Job Queue modal
+- Viewing job logs
+- Manual cleanup for stuck jobs
+- Performance metrics
+
 ### [AGENTS.md Cross-Platform Guide](agents-md-cross-platform.md)
 
 Learn how AGENTS.md enables cross-platform compatibility:

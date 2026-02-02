@@ -132,3 +132,10 @@ Extracted from: [[2025-12-29]]
 - Do a web search for any relevant information needed as well
 
 Then make me a plan to setup open notebook on my mac and pipe in an array of folder paths from my obsidian vault. 
+
+
+- [x] Why does it not show the logs when I click it for the recent jobs?
+- [x] I have running, pending, recent but no completed category for jobs?
+- [-] Why does the UI look so ugly? Can we not use tables and design elements from shadcn?
+- [ ] Save the execution stats for the job like start time for the job, finish time for the job, and then elapsed time. I want to calculate the avg response time per agent on a daily basis so that as I make progress on the sytem I can see how it's getting faster. 
+- Next, supabase is currently in my NerdU app but I would like to be able to use it from a global place to not clutter up my mac. Is it possible to move it to a global place, or should I create a dockerized version or something so I can have one config and not 25 different instances of supabase on my mac? Also how do I run apps that use supabase in claude code web when im building there?

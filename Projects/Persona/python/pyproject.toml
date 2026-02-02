@@ -1,0 +1,29 @@
+[project]
+name = "persona-queue"
+version = "0.1.0"
+description = "Supabase-based job queue system for Persona AI agents"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = ["-v", "--tb=short", "-ra"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["persona"]
+branch = true
+omit = ["tests/*", "*/__pycache__/*", "persona/cli.py", "persona/migrate.py", "persona/monitor.py", "persona/worker.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 50
+
+[tool.coverage.html]
+directory = "htmlcov"

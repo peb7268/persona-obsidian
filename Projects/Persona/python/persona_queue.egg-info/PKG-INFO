@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: persona-queue
+Version: 0.1.0
+Summary: Supabase-based job queue system for Persona AI agents
+Author: Persona
+Requires-Python: >=3.10
+Requires-Dist: supabase>=2.0.0
+Requires-Dist: psutil>=5.9.0
+Requires-Dist: click>=8.1.0
+Requires-Dist: tabulate>=0.9.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: pydantic>=2.0.0
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

@@ -30,10 +30,10 @@ export default class PersonaPlugin extends Plugin {
     await this.loadSettings();
 
     // Initialize services
-    this.executionService = new ExecutionService(this.settings);
+    this.jobQueueService = new JobQueueService(this.settings);
+    this.executionService = new ExecutionService(this.settings, this.jobQueueService);
     this.syntaxParser = new SyntaxParser();
     this.taskSyntaxService = new TaskSyntaxService();
-    this.jobQueueService = new JobQueueService(this.settings);
 
     // Add settings tab
     this.addSettingTab(new PersonaSettingTab(this.app, this));
@@ -76,8 +76,9 @@ export default class PersonaPlugin extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
-    // Update execution service with new settings
-    this.executionService = new ExecutionService(this.settings);
+    // Update services with new settings
+    this.jobQueueService = new JobQueueService(this.settings);
+    this.executionService = new ExecutionService(this.settings, this.jobQueueService);
   }
 
   updateRibbonIcon() {
@@ -115,7 +116,15 @@ export default class PersonaPlugin extends Plugin {
 
       // Add view queue handler
       this.statusBar.setViewQueueHandler(() => {
-        new JobQueueModal(this.app, this.jobQueueService).open();
+        new JobQueueModal(this.app, this.jobQueueService, this.settings).open();
+      });
+
+      // Add instance change handler
+      this.statusBar.setInstanceChangeHandler(async (instance: string) => {
+        this.settings.business = instance;
+        await this.saveSettings();
+        this.statusBar?.updateBusiness(instance);
+        new Notice(`Switched to instance: ${instance}`);
       });
     }
   }

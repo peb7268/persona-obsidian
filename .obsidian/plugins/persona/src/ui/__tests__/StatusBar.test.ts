@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { StatusBarManager } from '../StatusBar';
 import { PersonaSettings, ProgressState } from '../../types';
 import { MockHTMLElement } from '../../__tests__/mocks/obsidian';

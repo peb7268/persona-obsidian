@@ -24,6 +24,13 @@ export interface PersonaSettings {
   defaultProvider: ProviderType;
   // Routing settings (header-based instance selection)
   routing: RoutingConfig;
+  // Python bridge settings
+  pythonPath: string;
+  // Supabase settings (for job queue)
+  supabaseUrl: string;
+  supabaseKey: string;
+  // Job queue settings
+  hungThresholdMinutes: number;
 }
 
 export const DEFAULT_SETTINGS: PersonaSettings = {
@@ -46,6 +53,13 @@ export const DEFAULT_SETTINGS: PersonaSettings = {
   defaultProvider: 'claude',
   // Routing defaults
   routing: DEFAULT_ROUTING_CONFIG,
+  // Python bridge defaults
+  pythonPath: '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3',
+  // Supabase defaults (local instance)
+  supabaseUrl: 'http://127.0.0.1:54321',
+  supabaseKey: '',
+  // Job queue defaults
+  hungThresholdMinutes: 5,
 };
 
 export interface AgentDefinition {

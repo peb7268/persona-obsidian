@@ -146,6 +146,7 @@ export class MockHTMLElement {
   innerHTML = '';
   textContent = '';
   style: any = {};
+  dataset: Record<string, string> = {};
   children: MockHTMLElement[] = [];
 
   appendChild = jest.fn((child: MockHTMLElement) => {

@@ -121,9 +121,14 @@ class JobStore:
         Returns:
             Job object if found, None otherwise
         """
-        result = self.client.table("jobs").select("*").or_(
-            f"id.eq.{job_id},short_id.eq.{job_id}"
-        ).execute()
+        # Determine if this is a UUID (36 chars with dashes) or short_id (8 chars)
+        # UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        is_uuid = len(job_id) == 36 and job_id.count('-') == 4
+
+        if is_uuid:
+            result = self.client.table("jobs").select("*").eq("id", job_id).execute()
+        else:
+            result = self.client.table("jobs").select("*").eq("short_id", job_id).execute()
 
         if result.data:
             return self._row_to_job(result.data[0])
