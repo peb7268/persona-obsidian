@@ -1,0 +1,20 @@
+{
+  "runId": "2026-02-02T02-54-13",
+  "timestamp": "2026-02-02T02:54:29Z",
+  "trigger": "local",
+  "branch": "main",
+  "commit": "f2d4350",
+  "manifestValid": true,
+  "status": "failed",
+  "suites": {
+    "typescript": {
+      "total": 236,
+      "passed": 204,
+      "failed": 32,
+      "coverage": 0
+    },
+    "python": {
+      "coverage": 0
+    }
+  }
+}

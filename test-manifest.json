@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "typescript": {
+    "root": ".obsidian/plugins/persona",
+    "pattern": "src/**/__tests__/**/*.test.ts",
+    "files": [
+      "src/services/__tests__/SyntaxParser.test.ts",
+      "src/services/__tests__/DuplicateDetector.test.ts",
+      "src/services/__tests__/JobQueueService.test.ts",
+      "src/services/__tests__/JobQueueService.integration.test.ts",
+      "src/services/__tests__/RoutingService.test.ts",
+      "src/services/__tests__/AgentDefinitionParser.test.ts",
+      "src/services/__tests__/ExecutionService.test.ts",
+      "src/services/__tests__/TaskQueueService.test.ts",
+      "src/ui/__tests__/StatusBar.test.ts",
+      "src/ui/__tests__/JobQueueModal.test.ts"
+    ]
+  },
+  "python": {
+    "root": "Projects/Persona/python",
+    "pattern": "tests/test_*.py",
+    "files": [
+      "tests/test_job_store.py",
+      "tests/test_bridge.py"
+    ]
+  }
+}

@@ -116,3 +116,22 @@ Person:   First Last.md
 Template: Template-Name.md
 Embed:    Business-Section.md
 ```
+
+## Testing
+
+See `Projects/Persona/AGENTS.md` for full test harness documentation.
+
+```bash
+cd .obsidian/plugins/persona
+
+# Run all tests (TypeScript + Python)
+npm run test:all
+
+# Run and save artifacts
+npm run test:all:save
+
+# Validate test manifest
+npm run test:manifest
+```
+
+**Test Manifest:** All test files must be registered in `test-manifest.json`. CI fails if manifest doesn't match discovered tests.

@@ -1,0 +1,28 @@
+#!/bin/sh
+# Pre-commit hook for Persona test harness
+# Bypass with: git commit --no-verify -m "message"
+
+echo "Running pre-commit tests..."
+
+# Get the repo root
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# TypeScript: test files related to staged changes
+STAGED_TS=$(git diff --cached --name-only --diff-filter=d | grep '\.tsx\?$' || true)
+if [ -n "$STAGED_TS" ]; then
+  echo "[TypeScript] Running related tests..."
+  cd "$REPO_ROOT/.obsidian/plugins/persona"
+  npx jest --findRelatedTests --passWithNoTests $STAGED_TS
+  cd "$REPO_ROOT"
+fi
+
+# Python: run if Python files changed
+STAGED_PY=$(git diff --cached --name-only --diff-filter=d | grep 'Projects/Persona/python/.*\.py$' || true)
+if [ -n "$STAGED_PY" ]; then
+  echo "[Python] Running tests..."
+  cd "$REPO_ROOT/Projects/Persona/python"
+  python -m pytest tests/ -x -q --tb=short
+  cd "$REPO_ROOT"
+fi
+
+echo "Pre-commit tests passed!"

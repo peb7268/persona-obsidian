@@ -1,0 +1,1523 @@
+
+> obsidian-persona@0.1.0 test
+> jest --ci --coverage --json --outputFile=/Users/pbarrick/Documents/Main/test-runs/2026-02-02T02-54-13/typescript/results.json --coverageDirectory=/Users/pbarrick/Documents/Main/test-runs/2026-02-02T02-54-13/typescript/coverage
+
+PASS src/services/__tests__/SyntaxParser.test.ts
+  SyntaxParser
+    parse
+      ✓ should parse basic research question syntax (3 ms)
+      ✓ should handle multiple research questions (1 ms)
+      ✓ should parse research questions in markdown list items (1 ms)
+      ✓ should handle indented list items
+      ✓ should trim whitespace from questions
+      ✓ should return empty array for content without questions (1 ms)
+      ✓ should not match [?] in middle of line
+      ✓ should not match [?] without question text
+      ✓ should handle empty string (1 ms)
+      ✓ should handle complex markdown with mixed content (1 ms)
+    countQuestions
+      ✓ should return correct count for multiple questions
+      ✓ should return 0 for no questions (1 ms)
+      ✓ should return 0 for empty content (1 ms)
+    getQuestions
+      ✓ should extract question strings only
+      ✓ should return empty array when no questions (1 ms)
+      ✓ should preserve question order (1 ms)
+
+PASS src/services/__tests__/AgentDefinitionParser.test.ts
+  AgentDefinitionParser
+    parseAgentFile
+      ✓ should return null if file does not exist (4 ms)
+      ✓ should parse basic frontmatter
+      ✓ should parse model field (1 ms)
+      ✓ should parse provider field
+      ✓ should parse priority field
+      ✓ should return null if no frontmatter (1 ms)
+      ✓ should return null if frontmatter not closed
+      ✓ should handle file read errors
+      ✓ should handle empty frontmatter (1 ms)
+      ✓ should handle frontmatter with extra whitespace
+      ✓ should ignore lines without colons
+      ✓ should handle values containing colons
+    getProviderOverride
+      ✓ should return provider and model from agent definition (1 ms)
+      ✓ should return undefined values if not specified
+      ✓ should return empty object if file does not exist
+      ✓ should return only provider if model not specified
+      ✓ should return only model if provider not specified (3 ms)
+    buildAgentPath
+      ✓ should build correct path
+      ✓ should handle different persona roots
+      ✓ should handle agent names with hyphens
+    agentExists
+      ✓ should return true if agent file exists (1 ms)
+      ✓ should return false if agent file does not exist
+    full agent definition parsing
+      ✓ should parse complete agent definition
+      ✓ should parse MHM assistant agent definition (2 ms)
+    edge cases
+      ✓ should handle Windows-style line endings
+      ✓ should handle frontmatter with --- in content
+      ✓ should handle unknown fields gracefully (1 ms)
+
+PASS src/services/__tests__/RoutingService.test.ts
+  RoutingService
+    constructor
+      ✓ should initialize with provided config (4 ms)
+    loadFromEnv
+      ✓ should return default config if file does not exist (1 ms)
+      ✓ should parse routing_enabled correctly (1 ms)
+      ✓ should parse default_instance correctly
+      ✓ should parse max_concurrent_tasks correctly
+      ✓ should parse header mappings correctly (1 ms)
+      ✓ should handle full config file
+      ✓ should handle parse errors gracefully
+      ✓ should ignore lines without colons (1 ms)
+    resolveInstance
+      ✓ should return default when routing is disabled (1 ms)
+      ✓ should resolve instance based on cursor line header (1 ms)
+      ✓ should resolve Personal header correctly (1 ms)
+      ✓ should return default when no matching header
+      ✓ should return default when cursor line is not provided (1 ms)
+      ✓ should handle MCO header alias
+    findEnclosingHeader
+      ✓ should find header on same line (1 ms)
+      ✓ should find header above cursor
+      ✓ should return nearest H2 header (2 ms)
+      ✓ should return null when no H2 header above (1 ms)
+      ✓ should handle line numbers beyond content
+      ✓ should handle empty content
+      ✓ should trim header text (1 ms)
+    extractH2Headers
+      ✓ should extract all H2 headers
+      ✓ should return empty array for no H2 headers
+      ✓ should trim header text
+    normalizeHeader (via resolveInstance)
+      ✓ should handle header with emoji (1 ms)
+      ✓ should handle header with multiple words
+      ✓ should be case insensitive
+    isEnabled
+      ✓ should return true when enabled
+      ✓ should return false when disabled (1 ms)
+    getConfig
+      ✓ should return copy of config
+    getHeaderMappings
+      ✓ should return copy of header mappings (1 ms)
+      ✓ should include all configured mappings (1 ms)
+    DEFAULT_ROUTING_CONFIG
+      ✓ should have sensible defaults
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Primary (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+PASS src/services/__tests__/DuplicateDetector.test.ts
+  DuplicateDetector
+    extractTitle
+      ✓ should extract title from markdown heading (18 ms)
+      ✓ should extract title from h1 heading (1 ms)
+      ✓ should use first line if no heading and line is short (1 ms)
+      ✓ should clean markdown formatting from title (1 ms)
+      ✓ should create snippet from long content without heading
+      ✓ should handle empty content (1 ms)
+    extractTags
+      ✓ should extract hashtags from content (1 ms)
+      ✓ should handle hashtags with hyphens
+      ✓ should deduplicate tags (1 ms)
+      ✓ should return empty array when no tags
+      ✓ should handle multiple different tags (1 ms)
+    findDuplicates
+      ✓ should return empty array when zettelkasten path does not exist
+      ✓ should find exact title match (1 ms)
+      ✓ should skip index files
+      ✓ should find partial matches above threshold (1 ms)
+      ✓ should sort results by match score descending (32 ms)
+      ✓ should search recursively in nested folders (1 ms)
+    findRelatedSubjects
+      ✓ should return empty array when zettelkasten path does not exist (1 ms)
+      ✓ should find subject folders with similar names (2 ms)
+      ✓ should detect folders with index files (4 ms)
+      ✓ should count markdown files in subject folders (1 ms)
+    getAllSubjectFolders
+      ✓ should return empty array when zettelkasten path does not exist
+      ✓ should collect all subject folders (2 ms)
+      ✓ should collect nested subject folders recursively
+
+FAIL src/ui/__tests__/StatusBar.test.ts
+  StatusBarManager
+    constructor
+      ✕ should initialize with ready state (5 ms)
+      ✕ should add CSS class to status bar element
+      ✕ should set cursor to pointer
+      ✕ should add click event listener
+    setClickHandler
+      ✕ should register click handler
+      ✕ should replace existing click handler
+    setReady
+      ✕ should display business name (1 ms)
+      ✕ should remove running and error classes
+    setRunning
+      ✕ should display agent name (1 ms)
+      ✕ should add running CSS class
+      ✕ should display spinner (1 ms)
+      ✕ should display action when provided
+      ✕ should not display action when not provided
+      ✕ should clear existing content before updating
+    setProgress
+      ✕ should display progress with questions (1 ms)
+      ✕ should display current activity when no questions
+      ✕ should not display activity when questions are present
+      ✕ should display elapsed time
+      ✕ should add running CSS class (1 ms)
+      ✕ should clear existing content before updating
+    setError
+      ✕ should display error message
+      ✕ should add error CSS class
+    updateBusiness
+      ✕ should update business name in settings
+      ✕ should update status bar to show new business
+      ✕ should set ready state after updating
+
+  ● StatusBarManager › constructor › should initialize with ready state
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › constructor › should add CSS class to status bar element
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › constructor › should set cursor to pointer
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › constructor › should add click event listener
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setClickHandler › should register click handler
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setClickHandler › should replace existing click handler
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setReady › should display business name
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setReady › should remove running and error classes
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setRunning › should display agent name
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setRunning › should add running CSS class
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setRunning › should display spinner
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setRunning › should display action when provided
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setRunning › should not display action when not provided
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setRunning › should clear existing content before updating
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setProgress › should display progress with questions
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setProgress › should display current activity when no questions
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setProgress › should not display activity when questions are present
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setProgress › should display elapsed time
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setProgress › should add running CSS class
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setProgress › should clear existing content before updating
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setError › should display error message
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › setError › should add error CSS class
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › updateBusiness › should update business name in settings
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › updateBusiness › should update status bar to show new business
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  ● StatusBarManager › updateBusiness › should set ready state after updating
+
+    The error below may be caused by using the wrong test environment, see https://jestjs.io/docs/configuration#testenvironment-string.
+    Consider using the "jsdom" test environment.
+
+    ReferenceError: document is not defined
+
+      24 |
+      25 |     // Close dropdown when clicking outside
+    > 26 |     document.addEventListener('click', (e) => {
+         |     ^
+      27 |       if (this.isDropdownOpen && !this.dropdownEl?.contains(e.target as Node)) {
+      28 |         this.closeDropdown();
+      29 |       }
+
+      at new document (src/ui/StatusBar.ts:26:5)
+      at Object.<anonymous> (src/ui/__tests__/StatusBar.test.ts:24:24)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task completed: Test task content
+
+      at TaskQueueService.log [as handleSuccess] (src/services/TaskQueueService.ts:176:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 2)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 2)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 2)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 2)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 2)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 2)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Task moved to secondary queue: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:162:15)
+
+  console.log
+    Task moved to DLQ: Test task content
+
+      at TaskQueueService.log [as handleFailure] (src/services/TaskQueueService.ts:166:15)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Queued task: Test task content (primary: 1)
+
+      at TaskQueueService.log [as enqueue] (src/services/TaskQueueService.ts:116:13)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+PASS src/services/__tests__/TaskQueueService.test.ts
+  TaskQueueService
+    constructor
+      ✓ should create with default max concurrent of 2 (578 ms)
+      ✓ should use provided max concurrent value (4 ms)
+      ✓ should load existing queue from disk (4 ms)
+      ✓ should create empty queue if file parse fails (38 ms)
+    enqueue
+      ✓ should add task to primary queue (46 ms)
+      ✓ should set queuedAt timestamp (3 ms)
+      ✓ should persist queue to disk (2 ms)
+      ✓ should create directory if it does not exist (3 ms)
+    dequeue
+      ✓ should return undefined when queue is empty (3 ms)
+      ✓ should return task from primary queue first (3 ms)
+      ✓ should increment attempts when dequeued (3 ms)
+      ✓ should set lastAttemptAt when dequeued (3 ms)
+      ✓ should return from secondary queue when primary is empty (3 ms)
+      ✓ should remove task from queue (3 ms)
+    peek
+      ✓ should return undefined when queue is empty (1 ms)
+      ✓ should return first task without removing it (74 ms)
+      ✓ should peek primary queue first (48 ms)
+    handleFailure
+      ✓ should move task to secondary queue on first failure (2 ms)
+      ✓ should store error message (6 ms)
+      ✓ should move task to DLQ on second failure (5 ms)
+      ✓ should persist state after failure (5 ms)
+    handleSuccess
+      ✓ should persist state (8 ms)
+    retryFromDlq
+      ✓ should move task from DLQ back to primary (8 ms)
+      ✓ should reset attempts to 0 (2 ms)
+      ✓ should clear lastError (5 ms)
+      ✓ should return false if task not found in DLQ (2 ms)
+    retryAllFromDlq
+      ✓ should move all tasks from DLQ to primary (7 ms)
+      ✓ should return 0 if DLQ is empty (2 ms)
+    getStats
+      ✓ should return correct queue counts (4 ms)
+    size
+      ✓ should return total of primary + secondary (3 ms)
+      ✓ should not include DLQ in size (2 ms)
+    isEmpty
+      ✓ should return true when queue is empty (2 ms)
+      ✓ should return false when queue has tasks (2 ms)
+    canRunImmediately
+      ✓ should return true when running count is below max
+      ✓ should return false when running count equals max (1 ms)
+      ✓ should return false when running count exceeds max
+    setMaxConcurrent
+      ✓ should update max concurrent value
+    clear methods
+      ✓ should clear primary queue (2 ms)
+      ✓ should clear secondary queue (5 ms)
+      ✓ should clear DLQ (2 ms)
+      ✓ should clear all queues (5 ms)
+    slot available callback
+      ✓ should call callback when slot becomes available and queue has tasks (3 ms)
+      ✓ should not call callback when queue is empty
+      ✓ should not call callback if not set (4 ms)
+    getStatusString
+      ✓ should return formatted status string (3 ms)
+      ✓ should include DLQ count when not empty (6 ms)
+      ✓ should not include DLQ when empty (2 ms)
+    getPrimary/getSecondary/getDlq
+      ✓ should return copies of arrays, not references (1 ms)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for assistant:morning-briefing
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+  console.log
+    Created job abc12345 for researcher:process-queue
+
+      at ExecutionService.log (src/services/ExecutionService.ts:119:17)
+
+FAIL src/services/__tests__/JobQueueService.test.ts
+  JobQueueService
+    createJob
+      ✓ should create a job and return job info (24 ms)
+      ✕ should call bridge script with correct arguments (8 ms)
+      ✓ should handle bridge script errors (10 ms)
+      ✓ should handle JSON parse errors (5 ms)
+      ✓ should handle error responses from bridge (2 ms)
+    createResearchJob
+      ✓ should create research job with correct type and payload (4 ms)
+    createMeetingExtractionJob
+      ✓ should create meeting extraction job with correct payload (1 ms)
+    createAgentActionJob
+      ✓ should create agent action job with correct payload (1 ms)
+      ✓ should use default timeout if not provided (3 ms)
+    getJobStatus
+      ✕ should retrieve job status by ID (4 ms)
+      ✓ should handle job not found (2 ms)
+    getPendingJobs
+      ✓ should retrieve pending jobs without filter (4 ms)
+      ✕ should filter by agent when provided (2 ms)
+    getRunningJobs
+      ✓ should retrieve running jobs (1 ms)
+    getJobLogs
+      ✕ should retrieve job logs with default limit (4 ms)
+      ✕ should respect custom limit (3 ms)
+    getJobSummary
+      ✕ should retrieve job summary with all statuses (2 ms)
+    checkBridgeAvailable
+      ✓ should return true when bridge is available (1 ms)
+      ✓ should return false when bridge fails (2 ms)
+      ✓ should return false on spawn error (2 ms)
+    error handling
+      ✓ should handle process spawn errors (1 ms)
+      ✓ should handle partial JSON data (1 ms)
+      ✓ should accumulate stderr for error messages (1 ms)
+    integration scenarios
+      ✓ should create multiple jobs sequentially (1 ms)
+      ✓ should handle mixed job types (1 ms)
+
+  ● JobQueueService › createJob › should call bridge script with correct arguments
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "python3", ArrayContaining [StringContaining "bridge.py", "create_job", Any<String>], ObjectContaining {"cwd": StringContaining "python"}
+    Received: "/usr/bin/python3", ["/test/persona/python/persona/bridge.py", "create_job", "{\"type\":\"research\",\"payload\":{\"question\":\"Test question\"},\"agent\":\"researcher\",\"sourceFile\":\"test.md\",\"sourceLine\":42,\"tags\":[\"tag1\",\"tag2\"]}"], {"cwd": "/test/persona/python", "env": {"CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "CLAUDE_CODE_SSE_PORT": "21701", "COLOR": "0", "COLORTERM": "truecolor", "COMMAND_MODE": "unix2003", "COREPACK_ENABLE_AUTO_PIN": "0", "EDITOR": "vi", "ENABLE_IDE_INTEGRATION": "true", "GIT_ASKPASS": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh", "GIT_EDITOR": "true", "HOME": "/Users/pbarrick", "INIT_CWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "JEST_WORKER_ID": "2", "LANG": "en_US.UTF-8", "LESS": "-R", "LOGNAME": "pbarrick", "LSCOLORS": "Gxfxcxdxbxegedabagacad", "LaunchInstanceID": "63F45172-52E2-4598-91C1-B4335524D2F4", "MallocNanoZone": "0", "NODE": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "NODE_ENV": "test", "NVM_BIN": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin", "NVM_CD_FLAGS": "-q", "NVM_DIR": "/Users/pbarrick/.nvm", "NVM_INC": "/Users/pbarrick/.nvm/versions/node/v20.19.2/include/node", "NoDefaultCurrentDirectoryInExePath": "1", "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta", "P9K_SSH": "0", "P9K_TTY": "old", "PAGER": "less", "PATH": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/.antigravity/antigravity/bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/bin:/Users/pbarrick/opt/anaconda3/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/pbarrick/.cargo/bin:/Applications/Docker.app/Contents/Resources/bin/:/usr/local/bin:/usr/local/sbin", "PWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "PYTHONPATH": "/test/persona/python:/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages", "PYTHONUNBUFFERED": "1", "SECURITYSESSIONID": "186a3", "SHELL": "/bin/zsh", "SHLVL": "5", "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.Oc0x9dTxK2/Listeners", "SUPABASE_KEY": "test-key", "SUPABASE_URL": "http://localhost:54321", "TERM": "xterm-256color", "TERM_PROGRAM": "vscode", "TERM_PROGRAM_VERSION": "1.108.2", "TMPDIR": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/", "TS_JEST": "1", "USER": "pbarrick", "USER_ZDOTDIR": "/Users/pbarrick", "VIPSHOME": "/Users/runner/work/sharp-libvips/sharp-libvips/target", "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "", "VSCODE_GIT_ASKPASS_MAIN": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js", "VSCODE_GIT_ASKPASS_NODE": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)", "VSCODE_GIT_IPC_HANDLE": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/vscode-git-3f011f8b16.sock", "VSCODE_INJECTION": "1", "VSCODE_NONCE": "1c39ded7-323e-4dc3-bc53-4b6c2a586bf1", "VSCODE_PROFILE_INITIALIZED": "1", "VSCODE_PYTHON_AUTOACTIVATE_GUARD": "1", "XPC_FLAGS": "0x0", "XPC_SERVICE_NAME": "0", "ZDOTDIR": "/Users/pbarrick", "ZSH": "/Users/pbarrick/.oh-my-zsh", "_": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin/jest", "_P9K_SSH_TTY": "/dev/ttys014", "_P9K_TTY": "/dev/ttys014", "__CFBundleIdentifier": "com.microsoft.VSCode", "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0", "npm_command": "test", "npm_config_cache": "/Users/pbarrick/.npm", "npm_config_global_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_globalconfig": "/Users/pbarrick/.nvm/versions/node/v20.19.2/etc/npmrc", "npm_config_init_module": "/Users/pbarrick/.npm-init.js", "npm_config_local_prefix": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "npm_config_msvs_version": "2017", "npm_config_node_gyp": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js", "npm_config_noproxy": "", "npm_config_npm_version": "10.8.2", "npm_config_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_user_agent": "npm/10.8.2 node/v20.19.2 darwin arm64 workspaces/false", "npm_config_userconfig": "/Users/pbarrick/.npmrc", "npm_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/bin/npm-cli.js", "npm_lifecycle_event": "test", "npm_lifecycle_script": "jest", "npm_node_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "npm_package_json": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/package.json", "npm_package_name": "obsidian-persona", "npm_package_version": "0.1.0"}}
+
+    Number of calls: 1
+
+      109 |       );
+      110 |
+    > 111 |       expect(spawn).toHaveBeenCalledWith(
+          |                     ^
+      112 |         'python3',
+      113 |         expect.arrayContaining([
+      114 |           expect.stringContaining('bridge.py'),
+
+      at src/services/__tests__/JobQueueService.test.ts:111:21
+      at fulfilled (src/services/__tests__/JobQueueService.test.ts:5:58)
+
+  ● JobQueueService › getJobStatus › should retrieve job status by ID
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "python3", ArrayContaining ["get_job_status", "abc12345"], Any<Object>
+    Received: "/usr/bin/python3", ["/test/persona/python/persona/bridge.py", "get_job_status", "abc12345"], {"cwd": "/test/persona/python", "env": {"CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "CLAUDE_CODE_SSE_PORT": "21701", "COLOR": "0", "COLORTERM": "truecolor", "COMMAND_MODE": "unix2003", "COREPACK_ENABLE_AUTO_PIN": "0", "EDITOR": "vi", "ENABLE_IDE_INTEGRATION": "true", "GIT_ASKPASS": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh", "GIT_EDITOR": "true", "HOME": "/Users/pbarrick", "INIT_CWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "JEST_WORKER_ID": "2", "LANG": "en_US.UTF-8", "LESS": "-R", "LOGNAME": "pbarrick", "LSCOLORS": "Gxfxcxdxbxegedabagacad", "LaunchInstanceID": "63F45172-52E2-4598-91C1-B4335524D2F4", "MallocNanoZone": "0", "NODE": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "NODE_ENV": "test", "NVM_BIN": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin", "NVM_CD_FLAGS": "-q", "NVM_DIR": "/Users/pbarrick/.nvm", "NVM_INC": "/Users/pbarrick/.nvm/versions/node/v20.19.2/include/node", "NoDefaultCurrentDirectoryInExePath": "1", "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta", "P9K_SSH": "0", "P9K_TTY": "old", "PAGER": "less", "PATH": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/.antigravity/antigravity/bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/bin:/Users/pbarrick/opt/anaconda3/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/pbarrick/.cargo/bin:/Applications/Docker.app/Contents/Resources/bin/:/usr/local/bin:/usr/local/sbin", "PWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "PYTHONPATH": "/test/persona/python:/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages", "PYTHONUNBUFFERED": "1", "SECURITYSESSIONID": "186a3", "SHELL": "/bin/zsh", "SHLVL": "5", "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.Oc0x9dTxK2/Listeners", "SUPABASE_KEY": "test-key", "SUPABASE_URL": "http://localhost:54321", "TERM": "xterm-256color", "TERM_PROGRAM": "vscode", "TERM_PROGRAM_VERSION": "1.108.2", "TMPDIR": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/", "TS_JEST": "1", "USER": "pbarrick", "USER_ZDOTDIR": "/Users/pbarrick", "VIPSHOME": "/Users/runner/work/sharp-libvips/sharp-libvips/target", "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "", "VSCODE_GIT_ASKPASS_MAIN": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js", "VSCODE_GIT_ASKPASS_NODE": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)", "VSCODE_GIT_IPC_HANDLE": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/vscode-git-3f011f8b16.sock", "VSCODE_INJECTION": "1", "VSCODE_NONCE": "1c39ded7-323e-4dc3-bc53-4b6c2a586bf1", "VSCODE_PROFILE_INITIALIZED": "1", "VSCODE_PYTHON_AUTOACTIVATE_GUARD": "1", "XPC_FLAGS": "0x0", "XPC_SERVICE_NAME": "0", "ZDOTDIR": "/Users/pbarrick", "ZSH": "/Users/pbarrick/.oh-my-zsh", "_": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin/jest", "_P9K_SSH_TTY": "/dev/ttys014", "_P9K_TTY": "/dev/ttys014", "__CFBundleIdentifier": "com.microsoft.VSCode", "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0", "npm_command": "test", "npm_config_cache": "/Users/pbarrick/.npm", "npm_config_global_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_globalconfig": "/Users/pbarrick/.nvm/versions/node/v20.19.2/etc/npmrc", "npm_config_init_module": "/Users/pbarrick/.npm-init.js", "npm_config_local_prefix": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "npm_config_msvs_version": "2017", "npm_config_node_gyp": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js", "npm_config_noproxy": "", "npm_config_npm_version": "10.8.2", "npm_config_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_user_agent": "npm/10.8.2 node/v20.19.2 darwin arm64 workspaces/false", "npm_config_userconfig": "/Users/pbarrick/.npmrc", "npm_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/bin/npm-cli.js", "npm_lifecycle_event": "test", "npm_lifecycle_script": "jest", "npm_node_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "npm_package_json": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/package.json", "npm_package_name": "obsidian-persona", "npm_package_version": "0.1.0"}}
+
+    Number of calls: 1
+
+      259 |       expect(result.pid).toBe(12345);
+      260 |
+    > 261 |       expect(spawn).toHaveBeenCalledWith(
+          |                     ^
+      262 |         'python3',
+      263 |         expect.arrayContaining(['get_job_status', 'abc12345']),
+      264 |         expect.any(Object)
+
+      at src/services/__tests__/JobQueueService.test.ts:261:21
+      at fulfilled (src/services/__tests__/JobQueueService.test.ts:5:58)
+
+  ● JobQueueService › getPendingJobs › should filter by agent when provided
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "python3", ArrayContaining ["get_pending_jobs", "researcher"], Any<Object>
+    Received: "/usr/bin/python3", ["/test/persona/python/persona/bridge.py", "get_pending_jobs", "researcher"], {"cwd": "/test/persona/python", "env": {"CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "CLAUDE_CODE_SSE_PORT": "21701", "COLOR": "0", "COLORTERM": "truecolor", "COMMAND_MODE": "unix2003", "COREPACK_ENABLE_AUTO_PIN": "0", "EDITOR": "vi", "ENABLE_IDE_INTEGRATION": "true", "GIT_ASKPASS": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh", "GIT_EDITOR": "true", "HOME": "/Users/pbarrick", "INIT_CWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "JEST_WORKER_ID": "2", "LANG": "en_US.UTF-8", "LESS": "-R", "LOGNAME": "pbarrick", "LSCOLORS": "Gxfxcxdxbxegedabagacad", "LaunchInstanceID": "63F45172-52E2-4598-91C1-B4335524D2F4", "MallocNanoZone": "0", "NODE": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "NODE_ENV": "test", "NVM_BIN": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin", "NVM_CD_FLAGS": "-q", "NVM_DIR": "/Users/pbarrick/.nvm", "NVM_INC": "/Users/pbarrick/.nvm/versions/node/v20.19.2/include/node", "NoDefaultCurrentDirectoryInExePath": "1", "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta", "P9K_SSH": "0", "P9K_TTY": "old", "PAGER": "less", "PATH": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/.antigravity/antigravity/bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/bin:/Users/pbarrick/opt/anaconda3/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/pbarrick/.cargo/bin:/Applications/Docker.app/Contents/Resources/bin/:/usr/local/bin:/usr/local/sbin", "PWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "PYTHONPATH": "/test/persona/python:/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages", "PYTHONUNBUFFERED": "1", "SECURITYSESSIONID": "186a3", "SHELL": "/bin/zsh", "SHLVL": "5", "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.Oc0x9dTxK2/Listeners", "SUPABASE_KEY": "test-key", "SUPABASE_URL": "http://localhost:54321", "TERM": "xterm-256color", "TERM_PROGRAM": "vscode", "TERM_PROGRAM_VERSION": "1.108.2", "TMPDIR": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/", "TS_JEST": "1", "USER": "pbarrick", "USER_ZDOTDIR": "/Users/pbarrick", "VIPSHOME": "/Users/runner/work/sharp-libvips/sharp-libvips/target", "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "", "VSCODE_GIT_ASKPASS_MAIN": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js", "VSCODE_GIT_ASKPASS_NODE": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)", "VSCODE_GIT_IPC_HANDLE": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/vscode-git-3f011f8b16.sock", "VSCODE_INJECTION": "1", "VSCODE_NONCE": "1c39ded7-323e-4dc3-bc53-4b6c2a586bf1", "VSCODE_PROFILE_INITIALIZED": "1", "VSCODE_PYTHON_AUTOACTIVATE_GUARD": "1", "XPC_FLAGS": "0x0", "XPC_SERVICE_NAME": "0", "ZDOTDIR": "/Users/pbarrick", "ZSH": "/Users/pbarrick/.oh-my-zsh", "_": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin/jest", "_P9K_SSH_TTY": "/dev/ttys014", "_P9K_TTY": "/dev/ttys014", "__CFBundleIdentifier": "com.microsoft.VSCode", "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0", "npm_command": "test", "npm_config_cache": "/Users/pbarrick/.npm", "npm_config_global_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_globalconfig": "/Users/pbarrick/.nvm/versions/node/v20.19.2/etc/npmrc", "npm_config_init_module": "/Users/pbarrick/.npm-init.js", "npm_config_local_prefix": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "npm_config_msvs_version": "2017", "npm_config_node_gyp": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js", "npm_config_noproxy": "", "npm_config_npm_version": "10.8.2", "npm_config_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_user_agent": "npm/10.8.2 node/v20.19.2 darwin arm64 workspaces/false", "npm_config_userconfig": "/Users/pbarrick/.npmrc", "npm_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/bin/npm-cli.js", "npm_lifecycle_event": "test", "npm_lifecycle_script": "jest", "npm_node_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "npm_package_json": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/package.json", "npm_package_name": "obsidian-persona", "npm_package_version": "0.1.0"}}
+
+    Number of calls: 1
+
+      296 |       await service.getPendingJobs('researcher');
+      297 |
+    > 298 |       expect(spawn).toHaveBeenCalledWith(
+          |                     ^
+      299 |         'python3',
+      300 |         expect.arrayContaining(['get_pending_jobs', 'researcher']),
+      301 |         expect.any(Object)
+
+      at src/services/__tests__/JobQueueService.test.ts:298:21
+      at fulfilled (src/services/__tests__/JobQueueService.test.ts:5:58)
+
+  ● JobQueueService › getJobLogs › should retrieve job logs with default limit
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "python3", ArrayContaining ["get_job_logs", "abc12345", "50"], Any<Object>
+    Received: "/usr/bin/python3", ["/test/persona/python/persona/bridge.py", "get_job_logs", "abc12345", "50"], {"cwd": "/test/persona/python", "env": {"CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "CLAUDE_CODE_SSE_PORT": "21701", "COLOR": "0", "COLORTERM": "truecolor", "COMMAND_MODE": "unix2003", "COREPACK_ENABLE_AUTO_PIN": "0", "EDITOR": "vi", "ENABLE_IDE_INTEGRATION": "true", "GIT_ASKPASS": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh", "GIT_EDITOR": "true", "HOME": "/Users/pbarrick", "INIT_CWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "JEST_WORKER_ID": "2", "LANG": "en_US.UTF-8", "LESS": "-R", "LOGNAME": "pbarrick", "LSCOLORS": "Gxfxcxdxbxegedabagacad", "LaunchInstanceID": "63F45172-52E2-4598-91C1-B4335524D2F4", "MallocNanoZone": "0", "NODE": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "NODE_ENV": "test", "NVM_BIN": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin", "NVM_CD_FLAGS": "-q", "NVM_DIR": "/Users/pbarrick/.nvm", "NVM_INC": "/Users/pbarrick/.nvm/versions/node/v20.19.2/include/node", "NoDefaultCurrentDirectoryInExePath": "1", "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta", "P9K_SSH": "0", "P9K_TTY": "old", "PAGER": "less", "PATH": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/.antigravity/antigravity/bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/bin:/Users/pbarrick/opt/anaconda3/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/pbarrick/.cargo/bin:/Applications/Docker.app/Contents/Resources/bin/:/usr/local/bin:/usr/local/sbin", "PWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "PYTHONPATH": "/test/persona/python:/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages", "PYTHONUNBUFFERED": "1", "SECURITYSESSIONID": "186a3", "SHELL": "/bin/zsh", "SHLVL": "5", "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.Oc0x9dTxK2/Listeners", "SUPABASE_KEY": "test-key", "SUPABASE_URL": "http://localhost:54321", "TERM": "xterm-256color", "TERM_PROGRAM": "vscode", "TERM_PROGRAM_VERSION": "1.108.2", "TMPDIR": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/", "TS_JEST": "1", "USER": "pbarrick", "USER_ZDOTDIR": "/Users/pbarrick", "VIPSHOME": "/Users/runner/work/sharp-libvips/sharp-libvips/target", "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "", "VSCODE_GIT_ASKPASS_MAIN": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js", "VSCODE_GIT_ASKPASS_NODE": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)", "VSCODE_GIT_IPC_HANDLE": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/vscode-git-3f011f8b16.sock", "VSCODE_INJECTION": "1", "VSCODE_NONCE": "1c39ded7-323e-4dc3-bc53-4b6c2a586bf1", "VSCODE_PROFILE_INITIALIZED": "1", "VSCODE_PYTHON_AUTOACTIVATE_GUARD": "1", "XPC_FLAGS": "0x0", "XPC_SERVICE_NAME": "0", "ZDOTDIR": "/Users/pbarrick", "ZSH": "/Users/pbarrick/.oh-my-zsh", "_": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin/jest", "_P9K_SSH_TTY": "/dev/ttys014", "_P9K_TTY": "/dev/ttys014", "__CFBundleIdentifier": "com.microsoft.VSCode", "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0", "npm_command": "test", "npm_config_cache": "/Users/pbarrick/.npm", "npm_config_global_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_globalconfig": "/Users/pbarrick/.nvm/versions/node/v20.19.2/etc/npmrc", "npm_config_init_module": "/Users/pbarrick/.npm-init.js", "npm_config_local_prefix": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "npm_config_msvs_version": "2017", "npm_config_node_gyp": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js", "npm_config_noproxy": "", "npm_config_npm_version": "10.8.2", "npm_config_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_user_agent": "npm/10.8.2 node/v20.19.2 darwin arm64 workspaces/false", "npm_config_userconfig": "/Users/pbarrick/.npmrc", "npm_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/bin/npm-cli.js", "npm_lifecycle_event": "test", "npm_lifecycle_script": "jest", "npm_node_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "npm_package_json": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/package.json", "npm_package_name": "obsidian-persona", "npm_package_version": "0.1.0"}}
+
+    Number of calls: 1
+
+      335 |       expect(result[0].message).toBe('Started');
+      336 |
+    > 337 |       expect(spawn).toHaveBeenCalledWith(
+          |                     ^
+      338 |         'python3',
+      339 |         expect.arrayContaining(['get_job_logs', 'abc12345', '50']),
+      340 |         expect.any(Object)
+
+      at src/services/__tests__/JobQueueService.test.ts:337:21
+      at fulfilled (src/services/__tests__/JobQueueService.test.ts:5:58)
+
+  ● JobQueueService › getJobLogs › should respect custom limit
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "python3", ArrayContaining ["get_job_logs", "abc12345", "100"], Any<Object>
+    Received: "/usr/bin/python3", ["/test/persona/python/persona/bridge.py", "get_job_logs", "abc12345", "100"], {"cwd": "/test/persona/python", "env": {"CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "CLAUDE_CODE_SSE_PORT": "21701", "COLOR": "0", "COLORTERM": "truecolor", "COMMAND_MODE": "unix2003", "COREPACK_ENABLE_AUTO_PIN": "0", "EDITOR": "vi", "ENABLE_IDE_INTEGRATION": "true", "GIT_ASKPASS": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh", "GIT_EDITOR": "true", "HOME": "/Users/pbarrick", "INIT_CWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "JEST_WORKER_ID": "2", "LANG": "en_US.UTF-8", "LESS": "-R", "LOGNAME": "pbarrick", "LSCOLORS": "Gxfxcxdxbxegedabagacad", "LaunchInstanceID": "63F45172-52E2-4598-91C1-B4335524D2F4", "MallocNanoZone": "0", "NODE": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "NODE_ENV": "test", "NVM_BIN": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin", "NVM_CD_FLAGS": "-q", "NVM_DIR": "/Users/pbarrick/.nvm", "NVM_INC": "/Users/pbarrick/.nvm/versions/node/v20.19.2/include/node", "NoDefaultCurrentDirectoryInExePath": "1", "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta", "P9K_SSH": "0", "P9K_TTY": "old", "PAGER": "less", "PATH": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/.antigravity/antigravity/bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/bin:/Users/pbarrick/opt/anaconda3/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/pbarrick/.cargo/bin:/Applications/Docker.app/Contents/Resources/bin/:/usr/local/bin:/usr/local/sbin", "PWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "PYTHONPATH": "/test/persona/python:/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages", "PYTHONUNBUFFERED": "1", "SECURITYSESSIONID": "186a3", "SHELL": "/bin/zsh", "SHLVL": "5", "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.Oc0x9dTxK2/Listeners", "SUPABASE_KEY": "test-key", "SUPABASE_URL": "http://localhost:54321", "TERM": "xterm-256color", "TERM_PROGRAM": "vscode", "TERM_PROGRAM_VERSION": "1.108.2", "TMPDIR": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/", "TS_JEST": "1", "USER": "pbarrick", "USER_ZDOTDIR": "/Users/pbarrick", "VIPSHOME": "/Users/runner/work/sharp-libvips/sharp-libvips/target", "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "", "VSCODE_GIT_ASKPASS_MAIN": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js", "VSCODE_GIT_ASKPASS_NODE": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)", "VSCODE_GIT_IPC_HANDLE": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/vscode-git-3f011f8b16.sock", "VSCODE_INJECTION": "1", "VSCODE_NONCE": "1c39ded7-323e-4dc3-bc53-4b6c2a586bf1", "VSCODE_PROFILE_INITIALIZED": "1", "VSCODE_PYTHON_AUTOACTIVATE_GUARD": "1", "XPC_FLAGS": "0x0", "XPC_SERVICE_NAME": "0", "ZDOTDIR": "/Users/pbarrick", "ZSH": "/Users/pbarrick/.oh-my-zsh", "_": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin/jest", "_P9K_SSH_TTY": "/dev/ttys014", "_P9K_TTY": "/dev/ttys014", "__CFBundleIdentifier": "com.microsoft.VSCode", "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0", "npm_command": "test", "npm_config_cache": "/Users/pbarrick/.npm", "npm_config_global_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_globalconfig": "/Users/pbarrick/.nvm/versions/node/v20.19.2/etc/npmrc", "npm_config_init_module": "/Users/pbarrick/.npm-init.js", "npm_config_local_prefix": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "npm_config_msvs_version": "2017", "npm_config_node_gyp": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js", "npm_config_noproxy": "", "npm_config_npm_version": "10.8.2", "npm_config_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_user_agent": "npm/10.8.2 node/v20.19.2 darwin arm64 workspaces/false", "npm_config_userconfig": "/Users/pbarrick/.npmrc", "npm_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/bin/npm-cli.js", "npm_lifecycle_event": "test", "npm_lifecycle_script": "jest", "npm_node_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "npm_package_json": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/package.json", "npm_package_name": "obsidian-persona", "npm_package_version": "0.1.0"}}
+
+    Number of calls: 1
+
+      347 |       await service.getJobLogs('abc12345', 100);
+      348 |
+    > 349 |       expect(spawn).toHaveBeenCalledWith(
+          |                     ^
+      350 |         'python3',
+      351 |         expect.arrayContaining(['get_job_logs', 'abc12345', '100']),
+      352 |         expect.any(Object)
+
+      at src/services/__tests__/JobQueueService.test.ts:349:21
+      at fulfilled (src/services/__tests__/JobQueueService.test.ts:5:58)
+
+  ● JobQueueService › getJobSummary › should retrieve job summary with all statuses
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "python3", ArrayContaining ["get_job_summary"], Any<Object>
+    Received: "/usr/bin/python3", ["/test/persona/python/persona/bridge.py", "get_job_summary"], {"cwd": "/test/persona/python", "env": {"CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "CLAUDE_CODE_SSE_PORT": "21701", "COLOR": "0", "COLORTERM": "truecolor", "COMMAND_MODE": "unix2003", "COREPACK_ENABLE_AUTO_PIN": "0", "EDITOR": "vi", "ENABLE_IDE_INTEGRATION": "true", "GIT_ASKPASS": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh", "GIT_EDITOR": "true", "HOME": "/Users/pbarrick", "INIT_CWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "JEST_WORKER_ID": "2", "LANG": "en_US.UTF-8", "LESS": "-R", "LOGNAME": "pbarrick", "LSCOLORS": "Gxfxcxdxbxegedabagacad", "LaunchInstanceID": "63F45172-52E2-4598-91C1-B4335524D2F4", "MallocNanoZone": "0", "NODE": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "NODE_ENV": "test", "NVM_BIN": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin", "NVM_CD_FLAGS": "-q", "NVM_DIR": "/Users/pbarrick/.nvm", "NVM_INC": "/Users/pbarrick/.nvm/versions/node/v20.19.2/include/node", "NoDefaultCurrentDirectoryInExePath": "1", "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta", "P9K_SSH": "0", "P9K_TTY": "old", "PAGER": "less", "PATH": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/plugins/node_modules/.bin:/Users/pbarrick/Documents/Main/.obsidian/node_modules/.bin:/Users/pbarrick/Documents/Main/node_modules/.bin:/Users/pbarrick/Documents/node_modules/.bin:/Users/pbarrick/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/pbarrick/.antigravity/antigravity/bin:/Users/pbarrick/.nvm/versions/node/v20.19.2/bin:/Users/pbarrick/opt/anaconda3/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/pbarrick/.cargo/bin:/Applications/Docker.app/Contents/Resources/bin/:/usr/local/bin:/usr/local/sbin", "PWD": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "PYTHONPATH": "/test/persona/python:/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages", "PYTHONUNBUFFERED": "1", "SECURITYSESSIONID": "186a3", "SHELL": "/bin/zsh", "SHLVL": "5", "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.Oc0x9dTxK2/Listeners", "SUPABASE_KEY": "test-key", "SUPABASE_URL": "http://localhost:54321", "TERM": "xterm-256color", "TERM_PROGRAM": "vscode", "TERM_PROGRAM_VERSION": "1.108.2", "TMPDIR": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/", "TS_JEST": "1", "USER": "pbarrick", "USER_ZDOTDIR": "/Users/pbarrick", "VIPSHOME": "/Users/runner/work/sharp-libvips/sharp-libvips/target", "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "", "VSCODE_GIT_ASKPASS_MAIN": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js", "VSCODE_GIT_ASKPASS_NODE": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)", "VSCODE_GIT_IPC_HANDLE": "/var/folders/rb/_vlj2f41333cd6qkptj04dtw0000gn/T/vscode-git-3f011f8b16.sock", "VSCODE_INJECTION": "1", "VSCODE_NONCE": "1c39ded7-323e-4dc3-bc53-4b6c2a586bf1", "VSCODE_PROFILE_INITIALIZED": "1", "VSCODE_PYTHON_AUTOACTIVATE_GUARD": "1", "XPC_FLAGS": "0x0", "XPC_SERVICE_NAME": "0", "ZDOTDIR": "/Users/pbarrick", "ZSH": "/Users/pbarrick/.oh-my-zsh", "_": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/.bin/jest", "_P9K_SSH_TTY": "/dev/ttys014", "_P9K_TTY": "/dev/ttys014", "__CFBundleIdentifier": "com.microsoft.VSCode", "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0", "npm_command": "test", "npm_config_cache": "/Users/pbarrick/.npm", "npm_config_global_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_globalconfig": "/Users/pbarrick/.nvm/versions/node/v20.19.2/etc/npmrc", "npm_config_init_module": "/Users/pbarrick/.npm-init.js", "npm_config_local_prefix": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona", "npm_config_msvs_version": "2017", "npm_config_node_gyp": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js", "npm_config_noproxy": "", "npm_config_npm_version": "10.8.2", "npm_config_prefix": "/Users/pbarrick/.nvm/versions/node/v20.19.2", "npm_config_user_agent": "npm/10.8.2 node/v20.19.2 darwin arm64 workspaces/false", "npm_config_userconfig": "/Users/pbarrick/.npmrc", "npm_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/lib/node_modules/npm/bin/npm-cli.js", "npm_lifecycle_event": "test", "npm_lifecycle_script": "jest", "npm_node_execpath": "/Users/pbarrick/.nvm/versions/node/v20.19.2/bin/node", "npm_package_json": "/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/package.json", "npm_package_name": "obsidian-persona", "npm_package_version": "0.1.0"}}
+
+    Number of calls: 1
+
+      375 |       expect(result.hung).toBe(0);
+      376 |
+    > 377 |       expect(spawn).toHaveBeenCalledWith(
+          |                     ^
+      378 |         'python3',
+      379 |         expect.arrayContaining(['get_job_summary']),
+      380 |         expect.any(Object)
+
+      at src/services/__tests__/JobQueueService.test.ts:377:21
+      at fulfilled (src/services/__tests__/JobQueueService.test.ts:5:58)
+
+/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:7275
+      (0, obsidian_1.setIcon)(loaderIcon, 'loader-2');
+                             ^
+
+TypeError: (0 , obsidian_1.setIcon) is not a function
+    at JobQueueModal.<anonymous> (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:152:12)
+    at Generator.next (<anonymous>)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:6822:39
+    at new Promise (<anonymous>)
+    at Object.<anonymous>.__awaiter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:6771:10)
+    at JobQueueModal.renderJobs (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:7258:12)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:257:26
+    at Generator.next (<anonymous>)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:8:71
+    at new Promise (<anonymous>)
+    at Object.<anonymous>.__awaiter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:4:12)
+    at Object.<anonymous> (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:256:58)
+    at Promise.then.completed (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/testWorker.js:106:12)
+
+Node.js v20.19.2
+/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:7275
+      (0, obsidian_1.setIcon)(loaderIcon, 'loader-2');
+                             ^
+
+TypeError: (0 , obsidian_1.setIcon) is not a function
+    at JobQueueModal.<anonymous> (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:152:12)
+    at Generator.next (<anonymous>)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:6822:39
+    at new Promise (<anonymous>)
+    at Object.<anonymous>.__awaiter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:6771:10)
+    at JobQueueModal.renderJobs (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:7258:12)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:257:26
+    at Generator.next (<anonymous>)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:8:71
+    at new Promise (<anonymous>)
+    at Object.<anonymous>.__awaiter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:4:12)
+    at Object.<anonymous> (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:256:58)
+    at Promise.then.completed (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/testWorker.js:106:12)
+
+Node.js v20.19.2
+/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:7275
+      (0, obsidian_1.setIcon)(loaderIcon, 'loader-2');
+                             ^
+
+TypeError: (0 , obsidian_1.setIcon) is not a function
+    at JobQueueModal.<anonymous> (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:152:12)
+    at Generator.next (<anonymous>)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:6822:39
+    at new Promise (<anonymous>)
+    at Object.<anonymous>.__awaiter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:6771:10)
+    at JobQueueModal.renderJobs (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:7258:12)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:257:26
+    at Generator.next (<anonymous>)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:8:71
+    at new Promise (<anonymous>)
+    at Object.<anonymous>.__awaiter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:4:12)
+    at Object.<anonymous> (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:256:58)
+    at Promise.then.completed (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/testWorker.js:106:12)
+
+Node.js v20.19.2
+/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:7275
+      (0, obsidian_1.setIcon)(loaderIcon, 'loader-2');
+                             ^
+
+TypeError: (0 , obsidian_1.setIcon) is not a function
+    at JobQueueModal.<anonymous> (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:152:12)
+    at Generator.next (<anonymous>)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:6822:39
+    at new Promise (<anonymous>)
+    at Object.<anonymous>.__awaiter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:6771:10)
+    at JobQueueModal.renderJobs (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/JobQueueModal.ts:7258:12)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:257:26
+    at Generator.next (<anonymous>)
+    at /Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:8:71
+    at new Promise (<anonymous>)
+    at Object.<anonymous>.__awaiter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:4:12)
+    at Object.<anonymous> (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/src/ui/__tests__/JobQueueModal.test.ts:256:58)
+    at Promise.then.completed (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:121:9)
+    at run (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/runTest.js:444:34)
+    at Object.worker (/Users/pbarrick/Documents/Main/.obsidian/plugins/persona/node_modules/jest-runner/build/testWorker.js:106:12)
+
+Node.js v20.19.2
+FAIL src/ui/__tests__/JobQueueModal.test.ts
+  ● Test suite failed to run
+
+    Jest worker encountered 4 child process exceptions, exceeding retry limit
+
+      at ChildProcessWorker.initialize (node_modules/jest-worker/build/workers/ChildProcessWorker.js:181:21)
+
+PASS src/services/__tests__/ExecutionService.test.ts
+  ExecutionService
+    runAgent
+      ✓ should successfully run an agent (31 ms)
+      ✓ should call spawn with correct arguments (12 ms)
+      ✓ should use instance override when provided (3 ms)
+      ✓ should prevent duplicate runs of the same agent (4 ms)
+      ✓ should handle agent failure with non-zero exit code (2 ms)
+      ✓ should handle spawn errors (6 ms)
+      ✓ should create job in queue service (3 ms)
+      ✓ should update job status to running after spawn (4 ms)
+      ✓ should update job status to completed on success (4 ms)
+      ✓ should update job status to failed on error (3 ms)
+      ✓ should continue execution even if job creation fails (1 ms)
+    updateJobStatusWithRetry
+      ✓ should succeed on first attempt (2 ms)
+      ✓ should handle multiple status updates (1 ms)
+    isAgentRunning
+      ✓ should return false when no agent is running (1 ms)
+      ✓ should return true when agent is running (2 ms)
+      ✓ should return false after agent completes (3 ms)
+    getRunningCount
+      ✓ should return 0 when no agents running
+      ✓ should return correct count of running agents (2 ms)
+    getRunningExecutions
+      ✓ should return empty array when no agents running (1 ms)
+      ✓ should return details of running agents (1 ms)
+    logSystemError
+      ✓ should create log directory if it does not exist (3014 ms)
+    getAvailableInstances
+      ✓ should return list of instance directories (1 ms)
+      ✓ should return empty array if instances directory does not exist
+    getProgress
+      ✓ should return progress state from file (1 ms)
+      ✓ should return null if progress file does not exist (3 ms)
+      ✓ should return null on parse error (3 ms)
+    clearProgress
+      ✓ should delete progress file if it exists (6 ms)
+      ✓ should not throw if progress file does not exist (1 ms)
+    getElapsedTime
+      ✓ should return empty string if no start time
+      ✓ should return seconds for short durations (1 ms)
+      ✓ should return minutes and seconds for longer durations
+    reinitializeProviders
+      ✓ should reinitialize provider registry
+
+FAIL src/services/__tests__/JobQueueService.integration.test.ts (12.329 s)
+  JobQueueService Integration
+    environment handling
+      ✕ should fail without proper environment setup (documents the bug) (10004 ms)
+      ✓ should succeed with comprehensive environment (695 ms)
+      ✓ should handle missing dotenv gracefully after fix (433 ms)
+    Python executable
+      ✓ should find Python 3.12 at the configured path (10 ms)
+      ✓ should be able to import required modules with proper PYTHONPATH (401 ms)
+
+  ● JobQueueService Integration › environment handling › should fail without proper environment setup (documents the bug)
+
+    expect(received).toMatch(expected)
+
+    Expected pattern: /ModuleNotFoundError|ImportError|No module/
+    Received string:  ""
+
+      65 |         expect(code).not.toBe(0);
+      66 |         // Should see some kind of import error
+    > 67 |         expect(stderr).toMatch(/ModuleNotFoundError|ImportError|No module/);
+         |                        ^
+      68 |         done();
+      69 |       });
+      70 |     }, 10000);
+
+      at ChildProcess.<anonymous> (src/services/__tests__/JobQueueService.integration.test.ts:67:24)
+
+  ● JobQueueService Integration › environment handling › should fail without proper environment setup (documents the bug)
+
+    thrown: "Exceeded timeout of 10000 ms for a test while waiting for `done()` to be called.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      47 |
+      48 |   describe('environment handling', () => {
+    > 49 |     it('should fail without proper environment setup (documents the bug)', (done) => {
+         |     ^
+      50 |       const badEnv = createElectronLikeEnv();
+      51 |
+      52 |       // Use absolute path to python since PATH won't be set
+
+      at src/services/__tests__/JobQueueService.integration.test.ts:49:5
+      at src/services/__tests__/JobQueueService.integration.test.ts:48:3
+      at Object.<anonymous> (src/services/__tests__/JobQueueService.integration.test.ts:11:1)
+
+Test Suites: 4 failed, 6 passed, 10 total
+Tests:       32 failed, 204 passed, 236 total
+Snapshots:   0 total
+Time:        14.701 s
+Ran all test suites.
+Test results written to: ../../../test-runs/2026-02-02T02-54-13/typescript/results.json

@@ -1,15 +1,28 @@
-name: Test Persona Plugin
+name: Test Persona
 
 on:
   push:
-    branches: [ main, develop, 'claude/**' ]
+    branches: [main, develop, 'claude/**']
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
-  test:
-    name: Run Tests
+  validate-manifest:
+    name: Validate Test Manifest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate test manifest
+        run: |
+          chmod +x Projects/Persona/scripts/validate-manifest.sh
+          ./Projects/Persona/scripts/validate-manifest.sh
+
+  test-typescript:
+    name: TypeScript Tests
+    needs: validate-manifest
     runs-on: ubuntu-latest
 
     strategy:
@@ -37,30 +50,75 @@ jobs:
 
       - name: Run tests
         working-directory: .obsidian/plugins/persona
-        run: npm test -- --ci --coverage --maxWorkers=2
+        run: npm test -- --ci --coverage --maxWorkers=2 --json --outputFile=test-results.json
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
         if: matrix.node-version == '20.x'
         with:
           files: .obsidian/plugins/persona/coverage/lcov.info
-          flags: unittests
-          name: codecov-persona-plugin
+          flags: typescript
+          name: codecov-typescript
           fail_ci_if_error: false
 
       - name: Archive coverage report
         uses: actions/upload-artifact@v4
         if: matrix.node-version == '20.x'
         with:
-          name: coverage-report
+          name: typescript-coverage
           path: .obsidian/plugins/persona/coverage/
 
-      - name: Comment coverage on PR
-        uses: romeovs/lcov-reporter-action@v0.3.1
-        if: github.event_name == 'pull_request' && matrix.node-version == '20.x'
+  test-python:
+    name: Python Tests
+    needs: validate-manifest
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
-          lcov-file: .obsidian/plugins/persona/coverage/lcov.info
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: Projects/Persona/python/requirements*.txt
+
+      - name: Install dependencies
+        working-directory: Projects/Persona/python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-json-report
+
+      - name: Run tests
+        working-directory: Projects/Persona/python
+        run: |
+          python -m pytest tests/ -v --tb=short \
+            --cov=persona \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            --json-report --json-report-file=test-results.json
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          files: Projects/Persona/python/coverage.xml
+          flags: python
+          name: codecov-python
+          fail_ci_if_error: false
+
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.11'
+        with:
+          name: python-coverage
+          path: Projects/Persona/python/coverage.xml
 
   lint:
     name: Lint Code
@@ -87,6 +145,7 @@ jobs:
 
   build:
     name: Build Plugin
+    needs: [test-typescript, test-python]
     runs-on: ubuntu-latest
 
     steps:
