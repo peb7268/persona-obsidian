@@ -1,6 +1,10 @@
 {
   "recentFiles": [
     {
+      "basename": "Q-parallel-job-execution-resource-management",
+      "path": "Resources/Zettlekasten/Q-parallel-job-execution-resource-management.md"
+    },
+    {
       "basename": "2026-02-01",
       "path": "Resources/Agenda/Daily/2026-02-01.md"
     },
@@ -195,10 +199,6 @@
     {
       "basename": "README",
       "path": "README.md"
-    },
-    {
-      "basename": "Vadim Polosatov",
-      "path": "Resources/People/Vadim Polosatov.md"
     }
   ],
   "omittedPaths": [],

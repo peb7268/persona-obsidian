@@ -289,5 +289,72 @@ export class PersonaSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    // Queue Consumer section
+    containerEl.createEl('h3', { text: 'Queue Consumer' });
+
+    new Setting(containerEl)
+      .setName('Enable queue consumer')
+      .setDesc('Automatically poll Supabase for pending jobs and dispatch to agents')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.queueConsumerEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.queueConsumerEnabled = value;
+            await this.plugin.saveSettings();
+            this.plugin.updateQueueConsumer();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Poll interval')
+      .setDesc('How often to check for pending jobs')
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption('15', '15 seconds')
+          .addOption('30', '30 seconds')
+          .addOption('60', '1 minute')
+          .addOption('120', '2 minutes')
+          .setValue(String(this.plugin.settings.queuePollIntervalSeconds))
+          .onChange(async (value) => {
+            this.plugin.settings.queuePollIntervalSeconds = parseInt(value);
+            await this.plugin.saveSettings();
+            this.plugin.updateQueueConsumer();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Max concurrent agents')
+      .setDesc('Maximum number of agents that can run simultaneously')
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption('1', '1 agent')
+          .addOption('2', '2 agents')
+          .addOption('3', '3 agents')
+          .addOption('5', '5 agents')
+          .setValue(String(this.plugin.settings.maxConcurrentAgents))
+          .onChange(async (value) => {
+            this.plugin.settings.maxConcurrentAgents = parseInt(value);
+            await this.plugin.saveSettings();
+            this.plugin.updateQueueConsumer();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Agent timeout')
+      .setDesc('Maximum execution time before killing an agent')
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption('2', '2 minutes')
+          .addOption('5', '5 minutes')
+          .addOption('10', '10 minutes')
+          .addOption('15', '15 minutes')
+          .addOption('30', '30 minutes')
+          .setValue(String(this.plugin.settings.agentTimeoutMinutes))
+          .onChange(async (value) => {
+            this.plugin.settings.agentTimeoutMinutes = parseInt(value);
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }

@@ -95,6 +95,68 @@ CEO, CRO, Director, Researcher, Assistant, Project-Manager
 ### PersonalMCO - 3 Agents
 Assistant, Researcher, Project-Manager
 
+## Environment Setup
+
+### Requirements
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| Node.js | 18.x+ | For plugin build |
+| Python | 3.10+ | For bridge/job store |
+| Supabase CLI | Latest | Local database |
+| Obsidian | 1.4+ | Desktop app |
+
+### First-Time Setup
+
+```bash
+# 1. Clone and install
+cd .obsidian/plugins/persona
+npm install
+
+# 2. Set up Python environment
+cd Projects/Persona/python
+pip install -r requirements.txt
+pip install -r requirements-dev.txt  # for testing
+
+# 3. Start local Supabase
+supabase start
+supabase status  # Note the anon key
+
+# 4. Configure plugin settings (in Obsidian)
+# - Persona Root: /path/to/Projects/Persona
+# - Python Path: /path/to/python3 (e.g., /usr/bin/python3)
+# - Supabase URL: http://127.0.0.1:54321
+# - Supabase Key: <anon key from supabase status>
+```
+
+### Platform-Specific Python Paths
+
+| Platform | Typical Python Path |
+|----------|---------------------|
+| macOS (Homebrew) | `/opt/homebrew/bin/python3` |
+| macOS (Framework) | `/Library/Frameworks/Python.framework/Versions/3.12/bin/python3` |
+| Linux | `/usr/bin/python3` |
+| Windows | `C:\Python312\python.exe` |
+
+### Environment Variables
+
+The plugin sets these automatically when calling the bridge:
+
+| Variable | Purpose |
+|----------|---------|
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_KEY` | Supabase service/anon key |
+| `PYTHONPATH` | Python module search path |
+| `PYTHONUNBUFFERED` | Disable output buffering |
+
+For manual bridge testing:
+```bash
+export SUPABASE_URL="http://127.0.0.1:54321"
+export SUPABASE_KEY="your-key"
+cd Projects/Persona/python
+python persona/bridge.py get_job_summary
+```
+
 ## Safety Rules
 
 1. **Daily Notes**: Never create or overwrite directly; use embed files
@@ -110,9 +172,54 @@ Assistant, Researcher, Project-Manager
 | `state/executions.json` | Execution history |
 | `state/pending-notes.json` | Queued updates |
 | `state/queue.json` | Task queue (Primary/Secondary/DLQ) |
+| `state/running-agents.json` | Active agent PIDs (reliability tracking) |
 | `state/messages/inbox/{agent}/` | Inter-agent messages |
 | `state/context.json` | Business context |
 | `state/priorities.json` | Active priorities |
+
+## Reliability System
+
+The execution service includes several hardening mechanisms to ensure predictable behavior:
+
+### Duplicate Prevention
+
+Before spawning an agent, the system checks:
+1. Local `running-agents.json` state file
+2. Supabase `jobs` table for running jobs
+
+This dual-check prevents duplicate execution even after plugin reload.
+
+### Process Timeout
+
+All agent executions have a configurable timeout (default 5 minutes):
+- Timeout triggers process tree kill (SIGTERM → SIGKILL)
+- Job status updated to "failed" with timeout error
+- Settings: `agentTimeoutMinutes` in plugin settings
+
+### Orphan Cleanup
+
+On plugin initialization:
+1. Load `running-agents.json` from previous session
+2. Check if tracked PIDs are still running
+3. Kill stale processes (running > 2x timeout)
+4. Mark orphaned jobs as "failed" in Supabase
+5. Clean up state file
+
+### Heartbeat
+
+Running jobs send heartbeats every 30 seconds:
+- Updates `last_heartbeat` in Supabase
+- Allows accurate "hung" job detection
+- Continues through transient errors (log, don't crash)
+
+### Optimistic Locking
+
+Job updates use optimistic concurrency control:
+- `updated_at` field prevents TOCTOU races
+- Automatic retry (up to 3 attempts) on conflict
+- Raises `UpdateConflictError` if retries exhausted
+
+For detailed technical documentation, see `docs/system/reliability-architecture.md`.
 
 ### Task Queue Structure
 

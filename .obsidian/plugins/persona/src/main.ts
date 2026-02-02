@@ -4,6 +4,8 @@ import { ExecutionService } from './services/ExecutionService';
 import { SyntaxParser } from './services/SyntaxParser';
 import { TaskSyntaxService } from './services/TaskSyntaxService';
 import { JobQueueService } from './services/JobQueueService';
+import { QueueConsumerService } from './services/QueueConsumerService';
+import { ExecutionSlotManager } from './services/ExecutionSlotManager';
 import { AgentModal } from './ui/AgentModal';
 import { StatusBarManager } from './ui/StatusBar';
 import { PersonaSettingTab } from './ui/SettingsTab';
@@ -19,6 +21,8 @@ export default class PersonaPlugin extends Plugin {
   syntaxParser: SyntaxParser;
   taskSyntaxService: TaskSyntaxService;
   jobQueueService: JobQueueService;
+  queueConsumer: QueueConsumerService | null = null;
+  slotManager: ExecutionSlotManager | null = null;
   statusBar: StatusBarManager | null = null;
   private ribbonIconEl: HTMLElement | null = null;
   private statusBarEl: HTMLElement | null = null;
@@ -48,9 +52,17 @@ export default class PersonaPlugin extends Plugin {
     // Initialize auto-processing
     this.updateFileWatcher();
     this.updatePolling();
+
+    // Initialize queue consumer for active job polling
+    this.initializeQueueConsumer();
   }
 
   onunload() {
+    // Cleanup queue consumer
+    if (this.queueConsumer) {
+      this.queueConsumer.stop();
+      this.queueConsumer = null;
+    }
     // Cleanup file watcher
     if (this.fileWatcherRef) {
       this.app.vault.offref(this.fileWatcherRef);
@@ -448,6 +460,53 @@ export default class PersonaPlugin extends Plugin {
         this.checkAndProcessQuestions();
       }, ms);
     }
+  }
+
+  /**
+   * Initialize the queue consumer service for active job polling
+   */
+  private initializeQueueConsumer() {
+    // Create slot manager with configured max concurrent agents
+    this.slotManager = new ExecutionSlotManager(this.settings.maxConcurrentAgents || 2);
+
+    // Create queue consumer
+    this.queueConsumer = new QueueConsumerService(
+      this.jobQueueService,
+      this.executionService,
+      this.slotManager,
+      this.settings
+    );
+
+    // Start if enabled
+    if (this.settings.queueConsumerEnabled) {
+      this.queueConsumer.start();
+    }
+  }
+
+  /**
+   * Update queue consumer when settings change
+   */
+  updateQueueConsumer() {
+    if (!this.queueConsumer) {
+      this.initializeQueueConsumer();
+      return;
+    }
+
+    // Update settings and restart if needed
+    this.queueConsumer.updateSettings(this.settings);
+
+    if (this.settings.queueConsumerEnabled && !this.queueConsumer.isRunning()) {
+      this.queueConsumer.start();
+    } else if (!this.settings.queueConsumerEnabled && this.queueConsumer.isRunning()) {
+      this.queueConsumer.stop();
+    }
+  }
+
+  /**
+   * Get queue consumer status (for UI)
+   */
+  getQueueConsumerStatus() {
+    return this.queueConsumer?.getStatus() ?? null;
   }
 
   // Check for questions and process if found

@@ -8,18 +8,352 @@ import { JobQueueService, JobInfo } from './JobQueueService';
 import * as fs from 'fs';
 import * as path from 'path';
 
+interface RunningAgentState {
+  agent: string;
+  action: string;
+  startTime: string;
+  jobId?: string;
+  pid?: number;
+}
+
+interface RunningAgentsFile {
+  version: 1;
+  agents: Record<string, RunningAgentState>;
+  lastUpdated: string;
+}
+
 export class ExecutionService {
-  private runningExecutions: Map<string, { agent: string; action: string; startTime: Date; jobId?: string }> = new Map();
+  private runningExecutions: Map<string, { agent: string; action: string; startTime: Date; jobId?: string; pid?: number }> = new Map();
+  private heartbeatIntervals: Map<string, ReturnType<typeof setInterval>> = new Map();
   private lastNoticeTime: Map<string, number> = new Map();
   private readonly NOTICE_THROTTLE_MS = 2000;
+  private readonly RUNNING_AGENTS_FILE = 'running-agents.json';
+  private readonly HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds
   private providerRegistry: ProviderRegistry;
   private agentParser: AgentDefinitionParser;
   private jobQueueService: JobQueueService | null = null;
+  private initialized: boolean = false;
 
   constructor(private settings: PersonaSettings, jobQueueService?: JobQueueService) {
     this.providerRegistry = new ProviderRegistry(settings.providers, settings.defaultProvider);
     this.agentParser = new AgentDefinitionParser();
     this.jobQueueService = jobQueueService || null;
+  }
+
+  /**
+   * Initialize the execution service - sync running state with Supabase
+   * Should be called on plugin load
+   */
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
+
+    try {
+      // Load local running agents state
+      const localState = this.loadRunningAgentsFile();
+
+      // Clean up orphaned processes from previous session
+      await this.cleanupOrphanedProcesses(localState);
+
+      // Sync with Supabase if available
+      if (this.jobQueueService) {
+        await this.syncWithSupabase(localState);
+      } else {
+        // No Supabase - just restore from local file
+        for (const [id, state] of Object.entries(localState.agents)) {
+          this.runningExecutions.set(id, {
+            agent: state.agent,
+            action: state.action,
+            startTime: new Date(state.startTime),
+            jobId: state.jobId,
+            pid: state.pid,
+          });
+        }
+      }
+
+      this.initialized = true;
+      console.log(`ExecutionService initialized with ${this.runningExecutions.size} running agents`);
+    } catch (err) {
+      console.error('Failed to initialize ExecutionService:', err);
+      this.initialized = true; // Still mark as initialized to allow operation
+    }
+  }
+
+  /**
+   * Clean up orphaned processes from a previous session
+   * Orphaned = PID in state file but process is either dead or stale
+   */
+  private async cleanupOrphanedProcesses(localState: RunningAgentsFile): Promise<void> {
+    const orphanedJobs: { id: string; state: RunningAgentState }[] = [];
+
+    for (const [id, state] of Object.entries(localState.agents)) {
+      if (!state.pid) continue;
+
+      // Check if the process is still running
+      const isRunning = this.isProcessRunning(state.pid);
+
+      if (!isRunning) {
+        // Process is dead - this is an orphaned job
+        console.log(`Found orphaned agent ${state.agent} (PID ${state.pid} no longer running)`);
+        orphanedJobs.push({ id, state });
+      } else {
+        // Process is running - check if it's been running too long (stale)
+        const startTime = new Date(state.startTime);
+        const now = new Date();
+        const runningMinutes = (now.getTime() - startTime.getTime()) / 60000;
+        const maxMinutes = (this.settings.agentTimeoutMinutes || 5) * 2; // 2x timeout as safety margin
+
+        if (runningMinutes > maxMinutes) {
+          // Process has been running way too long - likely orphaned/hung
+          const pid = state.pid;
+          console.log(`Found stale agent ${state.agent} (PID ${pid} running for ${Math.round(runningMinutes)}m)`);
+
+          // Kill the stale process
+          try {
+            process.kill(-pid, 'SIGTERM');
+            setTimeout(() => {
+              try {
+                process.kill(-pid, 'SIGKILL');
+              } catch {
+                // May already be dead
+              }
+            }, 5000);
+          } catch {
+            // Try without process group
+            try {
+              process.kill(pid, 'SIGKILL');
+            } catch {
+              // Already dead
+            }
+          }
+
+          orphanedJobs.push({ id, state });
+        }
+      }
+    }
+
+    // Update Supabase status for orphaned jobs
+    if (this.jobQueueService && orphanedJobs.length > 0) {
+      for (const { state } of orphanedJobs) {
+        if (state.jobId) {
+          try {
+            await this.jobQueueService.updateJobStatus(
+              state.jobId,
+              'failed',
+              'Orphaned: Process terminated unexpectedly (plugin reload/crash)'
+            );
+            console.log(`Marked orphaned job ${state.jobId} as failed`);
+          } catch (err) {
+            console.warn(`Failed to update orphaned job ${state.jobId}:`, err);
+          }
+        }
+      }
+    }
+
+    // Remove orphaned entries from local state
+    for (const { id } of orphanedJobs) {
+      delete localState.agents[id];
+    }
+
+    // Save cleaned state
+    if (orphanedJobs.length > 0) {
+      this.saveRunningAgentsFile();
+      console.log(`Cleaned up ${orphanedJobs.length} orphaned agent(s)`);
+    }
+  }
+
+  /**
+   * Get the path to the running agents state file
+   */
+  private getRunningAgentsPath(): string {
+    return path.join(
+      this.settings.personaRoot,
+      'instances',
+      this.settings.business,
+      'state',
+      this.RUNNING_AGENTS_FILE
+    );
+  }
+
+  /**
+   * Load running agents from local state file
+   */
+  private loadRunningAgentsFile(): RunningAgentsFile {
+    const filePath = this.getRunningAgentsPath();
+
+    try {
+      if (fs.existsSync(filePath)) {
+        const content = fs.readFileSync(filePath, 'utf8');
+        return JSON.parse(content) as RunningAgentsFile;
+      }
+    } catch (err) {
+      console.warn('Failed to load running agents file:', err);
+    }
+
+    return { version: 1, agents: {}, lastUpdated: new Date().toISOString() };
+  }
+
+  /**
+   * Save running agents to local state file
+   */
+  private saveRunningAgentsFile(): void {
+    const filePath = this.getRunningAgentsPath();
+    const stateDir = path.dirname(filePath);
+
+    try {
+      // Ensure state directory exists
+      if (!fs.existsSync(stateDir)) {
+        fs.mkdirSync(stateDir, { recursive: true });
+      }
+
+      const state: RunningAgentsFile = {
+        version: 1,
+        agents: {},
+        lastUpdated: new Date().toISOString(),
+      };
+
+      for (const [id, exec] of this.runningExecutions.entries()) {
+        state.agents[id] = {
+          agent: exec.agent,
+          action: exec.action,
+          startTime: exec.startTime.toISOString(),
+          jobId: exec.jobId,
+          pid: exec.pid,
+        };
+      }
+
+      // Write atomically: write to temp file then rename
+      const tempPath = filePath + '.tmp';
+      fs.writeFileSync(tempPath, JSON.stringify(state, null, 2));
+      fs.renameSync(tempPath, filePath);
+    } catch (err) {
+      console.error('Failed to save running agents file:', err);
+    }
+  }
+
+  /**
+   * Sync local state with Supabase running jobs
+   */
+  private async syncWithSupabase(localState: RunningAgentsFile): Promise<void> {
+    if (!this.jobQueueService) return;
+
+    try {
+      // Get running jobs from Supabase
+      const runningJobs = await this.jobQueueService.getRunningJobs();
+      const supabaseJobIds = new Set(runningJobs.map(j => j.shortId));
+
+      // Check local agents against Supabase
+      for (const [id, state] of Object.entries(localState.agents)) {
+        if (state.jobId && supabaseJobIds.has(state.jobId)) {
+          // Job is still running in Supabase - restore to in-memory
+          this.runningExecutions.set(id, {
+            agent: state.agent,
+            action: state.action,
+            startTime: new Date(state.startTime),
+            jobId: state.jobId,
+            pid: state.pid,
+          });
+        } else if (state.jobId) {
+          // Job completed/failed in Supabase - don't restore
+          console.log(`Agent ${state.agent} (job ${state.jobId}) no longer running in Supabase`);
+        } else {
+          // Local-only agent (no job ID) - check if PID is still alive
+          if (state.pid && this.isProcessRunning(state.pid)) {
+            this.runningExecutions.set(id, {
+              agent: state.agent,
+              action: state.action,
+              startTime: new Date(state.startTime),
+              pid: state.pid,
+            });
+          }
+        }
+      }
+
+      // Save cleaned state
+      this.saveRunningAgentsFile();
+    } catch (err) {
+      console.warn('Failed to sync with Supabase:', err);
+      // On failure, restore local state as-is
+      for (const [id, state] of Object.entries(localState.agents)) {
+        this.runningExecutions.set(id, {
+          agent: state.agent,
+          action: state.action,
+          startTime: new Date(state.startTime),
+          jobId: state.jobId,
+          pid: state.pid,
+        });
+      }
+    }
+  }
+
+  /**
+   * Check if a process is still running
+   */
+  private isProcessRunning(pid: number): boolean {
+    try {
+      process.kill(pid, 0); // Signal 0 tests if process exists
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Start sending periodic heartbeats for a job
+   */
+  private startHeartbeat(executionId: string, jobId: string): void {
+    if (!this.jobQueueService) return;
+
+    // Clear any existing heartbeat for this execution
+    this.stopHeartbeat(executionId);
+
+    const interval = setInterval(async () => {
+      try {
+        const result = await this.jobQueueService!.heartbeat(jobId);
+        if (!result.success) {
+          console.warn(`Heartbeat failed for job ${jobId}:`, result.error);
+          // Don't stop on failure - job might still be running
+        }
+      } catch (err) {
+        console.warn(`Heartbeat error for job ${jobId}:`, err);
+        // Don't stop on error - job might still be running
+      }
+    }, this.HEARTBEAT_INTERVAL_MS);
+
+    this.heartbeatIntervals.set(executionId, interval);
+  }
+
+  /**
+   * Stop heartbeat for an execution
+   */
+  private stopHeartbeat(executionId: string): void {
+    const interval = this.heartbeatIntervals.get(executionId);
+    if (interval) {
+      clearInterval(interval);
+      this.heartbeatIntervals.delete(executionId);
+    }
+  }
+
+  /**
+   * Check if agent is running - checks both local and optionally Supabase
+   */
+  async isAgentRunningAsync(agent: string): Promise<boolean> {
+    // First check in-memory
+    if (this.isAgentRunning(agent)) {
+      return true;
+    }
+
+    // If Supabase available, double-check there
+    if (this.jobQueueService) {
+      try {
+        const runningJobs = await this.jobQueueService.getRunningJobs();
+        return runningJobs.some(j => j.assignedTo === agent);
+      } catch {
+        // On error, trust local state
+        return false;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -94,8 +428,14 @@ export class ExecutionService {
   }
 
   async runAgent(agent: string, action: string, instanceOverride?: string): Promise<ExecutionResult> {
-    // Prevent duplicate runs of the same agent
-    if (this.isAgentRunning(agent)) {
+    // Ensure initialized
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    // Prevent duplicate runs of the same agent - check both local and Supabase
+    const isRunning = await this.isAgentRunningAsync(agent);
+    if (isRunning) {
       this.showThrottledNotice(`Agent ${agent} is already running`, `running-${agent}`);
       return {
         success: false,
@@ -123,8 +463,12 @@ export class ExecutionService {
       }
     }
 
-    // Track running execution
+    // Track running execution (will add PID after spawn)
     this.runningExecutions.set(executionId, { agent, action, startTime, jobId: jobInfo?.shortId });
+    this.saveRunningAgentsFile();
+
+    // Configurable timeout in milliseconds (default 5 minutes)
+    const timeoutMs = (this.settings.agentTimeoutMinutes || 5) * 60 * 1000;
 
     return new Promise((resolve) => {
       const childProcess = spawn('bash', [scriptPath, business, agent, action], {
@@ -132,21 +476,109 @@ export class ExecutionService {
         env: { ...process.env },
       });
 
+      // Update with PID for orphan cleanup tracking
+      const pid = childProcess.pid;
+      if (pid) {
+        const exec = this.runningExecutions.get(executionId);
+        if (exec) {
+          exec.pid = pid;
+          this.saveRunningAgentsFile();
+        }
+      }
+
       // Mark job as running immediately after spawn (Phase 2)
       if (jobInfo && this.jobQueueService) {
-        this.updateJobStatusWithRetry(jobInfo.shortId, 'running').catch(() => {
-          // Non-critical - job will still run, just won't show as "running"
-        });
+        this.updateJobStatusWithRetry(jobInfo.shortId, 'running')
+          .then((success) => {
+            // Start heartbeat after job is marked as running
+            if (success) {
+              this.startHeartbeat(executionId, jobInfo.shortId);
+            }
+          })
+          .catch(() => {
+            // Non-critical - job will still run, just won't show as "running"
+          });
       }
 
       let stderr = '';
+      let resolved = false;
+      let timedOut = false;
+
+      // Timeout handler - kill process if it runs too long
+      const timeoutHandle = setTimeout(async () => {
+        if (resolved) return;
+        timedOut = true;
+
+        console.warn(`Agent ${agent} timed out after ${timeoutMs / 1000}s, killing process ${pid}`);
+
+        // Stop heartbeat
+        this.stopHeartbeat(executionId);
+
+        // Kill the process tree
+        if (pid) {
+          try {
+            // Kill the process group (negative PID) to get child processes too
+            process.kill(-pid, 'SIGTERM');
+            // Give it 5 seconds to clean up, then force kill
+            setTimeout(() => {
+              try {
+                process.kill(-pid, 'SIGKILL');
+              } catch {
+                // Process may have already exited
+              }
+            }, 5000);
+          } catch {
+            // Process may have already exited
+            try {
+              process.kill(pid, 'SIGKILL');
+            } catch {
+              // Ignore
+            }
+          }
+        }
+
+        this.runningExecutions.delete(executionId);
+        this.saveRunningAgentsFile();
+
+        // Update job status to failed with timeout error
+        if (jobInfo) {
+          const success = await this.updateJobStatusWithRetry(
+            jobInfo.shortId,
+            'failed',
+            `Timeout: Agent exceeded ${timeoutMs / 1000}s limit`
+          );
+          if (!success) {
+            this.logSystemError(`Job ${jobInfo.shortId} status update failed after timeout`);
+          }
+        }
+
+        this.showThrottledNotice(`Agent ${agent} timed out after ${timeoutMs / 60000}m`, `timeout-${agent}`);
+
+        resolved = true;
+        resolve({
+          success: false,
+          agent,
+          action,
+          startTime,
+          endTime: new Date(),
+          status: 'failed',
+        });
+      }, timeoutMs);
 
       childProcess.stderr.on('data', (data) => {
         stderr += data.toString();
       });
 
       childProcess.on('close', async (code) => {
+        clearTimeout(timeoutHandle);
+        if (resolved) return; // Already handled by timeout
+        resolved = true;
+
+        // Stop heartbeat
+        this.stopHeartbeat(executionId);
+
         this.runningExecutions.delete(executionId);
+        this.saveRunningAgentsFile();
         const endTime = new Date();
         const durationSec = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
 
@@ -180,7 +612,15 @@ export class ExecutionService {
       });
 
       childProcess.on('error', async (err) => {
+        clearTimeout(timeoutHandle);
+        if (resolved) return;
+        resolved = true;
+
+        // Stop heartbeat
+        this.stopHeartbeat(executionId);
+
         this.runningExecutions.delete(executionId);
+        this.saveRunningAgentsFile();
 
         // Update job status on error with retry logic
         if (jobInfo) {

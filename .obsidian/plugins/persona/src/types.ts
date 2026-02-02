@@ -31,6 +31,11 @@ export interface PersonaSettings {
   supabaseKey: string;
   // Job queue settings
   hungThresholdMinutes: number;
+  agentTimeoutMinutes: number;
+  // Queue consumer settings
+  queueConsumerEnabled: boolean;
+  queuePollIntervalSeconds: number;
+  maxConcurrentAgents: number;
 }
 
 export const DEFAULT_SETTINGS: PersonaSettings = {
@@ -60,6 +65,11 @@ export const DEFAULT_SETTINGS: PersonaSettings = {
   supabaseKey: '',
   // Job queue defaults
   hungThresholdMinutes: 5,
+  agentTimeoutMinutes: 5,
+  // Queue consumer defaults (enabled by default)
+  queueConsumerEnabled: true,
+  queuePollIntervalSeconds: 30,
+  maxConcurrentAgents: 2,
 };
 
 export interface AgentDefinition {

@@ -394,6 +394,25 @@ def update_job_status(job_id: str, data: dict) -> dict:
     return {'success': True, 'status': status}
 
 
+def heartbeat(job_id: str) -> dict:
+    """
+    Update heartbeat timestamp for a running job.
+
+    Args:
+        job_id: Job ID or short ID
+
+    Returns:
+        Success status
+    """
+    store = JobStore()
+
+    try:
+        store.heartbeat(job_id)
+        return {'success': True}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+
 def get_agent_daily_performance(agent: str = None, days: int = 7) -> dict:
     """
     Get daily performance metrics for agents.
@@ -580,6 +599,15 @@ def main():
             agent = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else None
             days = int(sys.argv[3]) if len(sys.argv) > 3 else 7
             result = get_agent_daily_performance(agent, days)
+            print(json.dumps(result))
+
+        elif command == 'heartbeat':
+            if len(sys.argv) < 3:
+                print(json.dumps({'error': 'No job ID provided'}))
+                sys.exit(1)
+
+            job_id = sys.argv[2]
+            result = heartbeat(job_id)
             print(json.dumps(result))
 
         else:

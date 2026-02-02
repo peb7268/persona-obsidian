@@ -313,6 +313,20 @@ export class JobQueueService {
   }
 
   /**
+   * Send a heartbeat for a running job
+   * Returns success/failure to allow caller to handle errors gracefully
+   */
+  async heartbeat(jobId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.callBridge('heartbeat', jobId);
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  /**
    * Check if bridge is available
    */
   async checkBridgeAvailable(): Promise<boolean> {

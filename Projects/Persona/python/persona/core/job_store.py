@@ -18,6 +18,11 @@ class JobStatus(Enum):
     HUNG = "hung"
 
 
+class UpdateConflictError(Exception):
+    """Raised when an optimistic locking conflict occurs during update."""
+    pass
+
+
 @dataclass
 class Job:
     """Job representation."""
@@ -31,6 +36,7 @@ class Job:
     created_at: Optional[str] = None
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
+    updated_at: Optional[str] = None
     last_heartbeat: Optional[str] = None
     exit_code: Optional[int] = None
     error_message: Optional[str] = None
@@ -134,28 +140,65 @@ class JobStore:
             return self._row_to_job(result.data[0])
         return None
 
-    def update_job(self, job_id: str, **updates) -> Job:
+    def update_job(self, job_id: str, max_retries: int = 3, **updates) -> Job:
         """
-        Update job fields.
+        Update job fields with optimistic locking to prevent TOCTOU races.
+
+        Uses updated_at field for optimistic concurrency control. If another
+        process updates the job between our read and write, we'll detect it
+        and retry with fresh data.
 
         Args:
             job_id: Job ID (full UUID or short ID)
+            max_retries: Maximum number of retry attempts on conflict
             **updates: Fields to update
 
         Returns:
             Updated Job object
+
+        Raises:
+            ValueError: If job not found
+            UpdateConflictError: If update conflicts persist after retries
         """
         # Convert enums to values
         if 'status' in updates and isinstance(updates['status'], JobStatus):
             updates['status'] = updates['status'].value
 
-        # Get the full UUID if short_id was provided
-        job = self.get_job(job_id)
-        if not job:
-            raise ValueError(f"Job {job_id} not found")
+        for attempt in range(max_retries):
+            # Get the current job state
+            job = self.get_job(job_id)
+            if not job:
+                raise ValueError(f"Job {job_id} not found")
 
-        result = self.client.table("jobs").update(updates).eq("id", job.id).execute()
-        return self._row_to_job(result.data[0])
+            # Always update the updated_at timestamp
+            new_updated_at = datetime.now(timezone.utc).isoformat()
+            updates['updated_at'] = new_updated_at
+
+            # Build query with optimistic lock
+            query = self.client.table("jobs").update(updates).eq("id", job.id)
+
+            # If the job has an updated_at, use it for optimistic locking
+            # This ensures no one else modified the row since we read it
+            if job.updated_at:
+                query = query.eq("updated_at", job.updated_at)
+
+            result = query.execute()
+
+            if result.data:
+                return self._row_to_job(result.data[0])
+
+            # No data returned - could be a conflict (another process updated)
+            # Retry with fresh data
+            if attempt < max_retries - 1:
+                import time
+                # Small backoff before retry
+                time.sleep(0.1 * (attempt + 1))
+                continue
+
+        # Exhausted retries - raise specific conflict error
+        raise UpdateConflictError(
+            f"Update conflict: Job {job_id} was modified by another process after {max_retries} retries"
+        )
 
     def start_job(self, job_id: str, pid: int) -> Job:
         """
@@ -395,6 +438,7 @@ class JobStore:
             created_at=row.get("created_at"),
             started_at=row.get("started_at"),
             completed_at=row.get("completed_at"),
+            updated_at=row.get("updated_at"),
             last_heartbeat=row.get("last_heartbeat"),
             exit_code=row.get("exit_code"),
             error_message=row.get("error_message"),
