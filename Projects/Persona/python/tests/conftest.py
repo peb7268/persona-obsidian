@@ -5,6 +5,15 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime, timezone
 
 
+@pytest.fixture(autouse=True)
+def reset_bridge_store():
+    """Reset the bridge singleton store before each test."""
+    from persona import bridge
+    bridge.reset_store()
+    yield
+    bridge.reset_store()
+
+
 @pytest.fixture
 def mock_supabase_client():
     """Create a mock Supabase client."""

@@ -399,7 +399,8 @@ describe('JobQueueService', () => {
     });
 
     it('should return false when bridge fails', async () => {
-      const mockProcess = createMockProcess('', 'Connection error', 1);
+      // Use non-retryable error message (not network/connection related)
+      const mockProcess = createMockProcess('', 'Invalid configuration', 1);
       (spawn as jest.Mock).mockReturnValue(mockProcess);
 
       const result = await service.checkBridgeAvailable();

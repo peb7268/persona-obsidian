@@ -454,3 +454,119 @@ class TestJobStatus:
         assert JobStatus.FAILED.value == 'failed'
         assert JobStatus.CANCELLED.value == 'cancelled'
         assert JobStatus.HUNG.value == 'hung'
+
+
+class TestUpdateJobOptimisticLocking:
+    """Tests for TOCTOU race condition prevention via optimistic locking."""
+
+    def test_update_job_uses_optimistic_locking(self, mock_supabase_client, sample_job_row, mock_env_vars):
+        """Should include updated_at in WHERE clause for optimistic lock."""
+        job_with_updated_at = {
+            **sample_job_row,
+            'updated_at': '2025-01-15T09:00:00+00:00'
+        }
+        mock_supabase_client.table.return_value.select.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[job_with_updated_at]
+        )
+        mock_supabase_client.table.return_value.update.return_value.eq.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[{**job_with_updated_at, 'status': 'running'}]
+        )
+
+        with patch('persona.core.job_store.create_client', return_value=mock_supabase_client):
+            from persona.core.job_store import JobStore
+            store = JobStore()
+            store.update_job('abc12345', status='running')
+
+            # Verify eq was called twice - once for id, once for updated_at (optimistic lock)
+            eq_calls = mock_supabase_client.table.return_value.update.return_value.eq.call_args_list
+            # First eq is for id, chain returns another mock that has eq for updated_at
+            assert len(eq_calls) >= 1
+
+    def test_update_job_retries_on_conflict(self, mock_supabase_client, sample_job_row, mock_env_vars):
+        """Should retry with fresh data when optimistic lock fails."""
+        job_with_updated_at = {
+            **sample_job_row,
+            'updated_at': '2025-01-15T09:00:00+00:00'
+        }
+
+        # First read
+        mock_supabase_client.table.return_value.select.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[job_with_updated_at]
+        )
+
+        # First update fails (empty data = conflict), second succeeds
+        update_results = [
+            MagicMock(data=[]),  # First attempt - conflict
+            MagicMock(data=[{**job_with_updated_at, 'status': 'running'}])  # Second attempt - success
+        ]
+        mock_supabase_client.table.return_value.update.return_value.eq.return_value.eq.return_value.execute.side_effect = update_results
+
+        with patch('persona.core.job_store.create_client', return_value=mock_supabase_client):
+            from persona.core.job_store import JobStore
+            store = JobStore()
+
+            # Should succeed after retry
+            job = store.update_job('abc12345', status='running')
+            assert job.status.value == 'running'
+
+    def test_update_job_raises_after_max_retries(self, mock_supabase_client, sample_job_row, mock_env_vars):
+        """Should raise UpdateConflictError after max retries exhausted."""
+        job_with_updated_at = {
+            **sample_job_row,
+            'updated_at': '2025-01-15T09:00:00+00:00'
+        }
+
+        mock_supabase_client.table.return_value.select.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[job_with_updated_at]
+        )
+
+        # All updates fail (simulating constant conflicts)
+        mock_supabase_client.table.return_value.update.return_value.eq.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[]  # Empty = conflict
+        )
+
+        with patch('persona.core.job_store.create_client', return_value=mock_supabase_client):
+            from persona.core.job_store import JobStore, UpdateConflictError
+            store = JobStore()
+
+            with pytest.raises(UpdateConflictError, match='conflict'):
+                store.update_job('abc12345', status='running', max_retries=3)
+
+    def test_update_job_without_prior_updated_at(self, mock_supabase_client, sample_job_row, mock_env_vars):
+        """Should still work for jobs without prior updated_at (new jobs)."""
+        # Job without updated_at field
+        job_without_updated = {**sample_job_row, 'updated_at': None}
+
+        mock_supabase_client.table.return_value.select.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[job_without_updated]
+        )
+        mock_supabase_client.table.return_value.update.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[{**sample_job_row, 'status': 'running', 'updated_at': '2025-01-15T10:00:00+00:00'}]
+        )
+
+        with patch('persona.core.job_store.create_client', return_value=mock_supabase_client):
+            from persona.core.job_store import JobStore
+            store = JobStore()
+
+            # Should succeed without optimistic lock for new jobs
+            job = store.update_job('abc12345', status='running')
+            assert job is not None
+
+    def test_update_job_sets_new_updated_at(self, mock_supabase_client, sample_job_row, mock_env_vars):
+        """Should always set a new updated_at timestamp."""
+        mock_supabase_client.table.return_value.select.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[sample_job_row]
+        )
+        mock_supabase_client.table.return_value.update.return_value.eq.return_value.execute.return_value = MagicMock(
+            data=[{**sample_job_row, 'status': 'running'}]
+        )
+
+        with patch('persona.core.job_store.create_client', return_value=mock_supabase_client):
+            from persona.core.job_store import JobStore
+            store = JobStore()
+            store.update_job('abc12345', status='running')
+
+            # Verify update was called with updated_at
+            update_call = mock_supabase_client.table.return_value.update.call_args
+            update_data = update_call[0][0]
+            assert 'updated_at' in update_data

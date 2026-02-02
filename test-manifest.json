@@ -12,6 +12,8 @@
       "src/services/__tests__/AgentDefinitionParser.test.ts",
       "src/services/__tests__/ExecutionService.test.ts",
       "src/services/__tests__/TaskQueueService.test.ts",
+      "src/services/__tests__/ExecutionSlotManager.test.ts",
+      "src/services/__tests__/QueueConsumerService.test.ts",
       "src/ui/__tests__/StatusBar.test.ts",
       "src/ui/__tests__/JobQueueModal.test.ts"
     ]

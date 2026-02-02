@@ -19,6 +19,34 @@ except ImportError:
 from persona.core.job_store import JobStore, JobStatus
 
 
+# Singleton JobStore instance to avoid creating new connections per call
+# This reduces connection overhead and helps avoid rate limits
+_store_instance: JobStore = None
+
+
+def get_store() -> JobStore:
+    """
+    Get or create the singleton JobStore instance.
+
+    Returns:
+        Shared JobStore instance
+    """
+    global _store_instance
+    if _store_instance is None:
+        _store_instance = JobStore()
+    return _store_instance
+
+
+def reset_store() -> None:
+    """
+    Reset the singleton store instance.
+
+    Primarily used for testing to ensure clean state between tests.
+    """
+    global _store_instance
+    _store_instance = None
+
+
 def create_job(data: dict) -> dict:
     """
     Create a new job.
@@ -29,7 +57,7 @@ def create_job(data: dict) -> dict:
     Returns:
         Created job info
     """
-    store = JobStore()
+    store = get_store()
 
     job = store.create_job(
         job_type=data.get('type', 'unknown'),
@@ -59,7 +87,7 @@ def get_job_status(job_id: str) -> dict:
     Returns:
         Job status info
     """
-    store = JobStore()
+    store = get_store()
     job = store.get_job(job_id)
 
     if not job:
@@ -90,7 +118,7 @@ def get_pending_jobs(agent: str = None) -> dict:
     Returns:
         List of pending jobs
     """
-    store = JobStore()
+    store = get_store()
     jobs = store.get_pending_jobs(assigned_to=agent, limit=50)
 
     return {
@@ -118,7 +146,7 @@ def get_running_jobs(agent: str = None) -> dict:
     Returns:
         List of running jobs
     """
-    store = JobStore()
+    store = get_store()
     jobs = store.get_running_jobs(assigned_to=agent)
 
     return {
@@ -147,7 +175,7 @@ def get_completed_jobs(limit: int = 20) -> dict:
     Returns:
         List of completed jobs
     """
-    store = JobStore()
+    store = get_store()
 
     # Get completed and failed jobs, ordered by completion time desc
     result = store.client.table("jobs").select("*").in_(
@@ -183,7 +211,7 @@ def get_hung_jobs(threshold_minutes: int = 5) -> dict:
     Returns:
         List of hung jobs
     """
-    store = JobStore()
+    store = get_store()
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=threshold_minutes)
 
     result = store.client.table("jobs").select("*").eq(
@@ -216,7 +244,7 @@ def get_failed_jobs(limit: int = 20) -> dict:
     Returns:
         List of failed jobs
     """
-    store = JobStore()
+    store = get_store()
 
     result = store.client.table("jobs").select("*").eq(
         "status", "failed"
@@ -252,7 +280,7 @@ def get_job_logs(job_id: str, limit: int = 50) -> dict:
     Returns:
         Job logs
     """
-    store = JobStore()
+    store = get_store()
     logs = store.get_logs(job_id, limit=limit)
 
     return {
@@ -331,7 +359,7 @@ def log_job_event(job_id: str, level: str, message: str, metadata: dict = None) 
     Returns:
         Success status
     """
-    store = JobStore()
+    store = get_store()
     try:
         store.log(job_id, message, level=level, metadata=metadata or {})
         return {'success': True}
@@ -346,7 +374,7 @@ def get_job_summary() -> dict:
     Returns:
         Job counts by status
     """
-    store = JobStore()
+    store = get_store()
 
     summary = {}
     for status in JobStatus:
@@ -369,7 +397,7 @@ def update_job_status(job_id: str, data: dict) -> dict:
     Returns:
         Success status
     """
-    store = JobStore()
+    store = get_store()
 
     status = data.get('status')
     error = data.get('error')
@@ -404,7 +432,7 @@ def heartbeat(job_id: str) -> dict:
     Returns:
         Success status
     """
-    store = JobStore()
+    store = get_store()
 
     try:
         store.heartbeat(job_id)
@@ -424,7 +452,7 @@ def get_agent_daily_performance(agent: str = None, days: int = 7) -> dict:
     Returns:
         Daily performance metrics per agent
     """
-    store = JobStore()
+    store = get_store()
 
     # Query jobs with both started_at and completed_at
     query = store.client.table("jobs").select(

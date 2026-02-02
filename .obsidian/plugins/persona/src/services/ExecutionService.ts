@@ -490,13 +490,20 @@ export class ExecutionService {
       if (jobInfo && this.jobQueueService) {
         this.updateJobStatusWithRetry(jobInfo.shortId, 'running')
           .then((success) => {
-            // Start heartbeat after job is marked as running
-            if (success) {
-              this.startHeartbeat(executionId, jobInfo.shortId);
+            // Always start heartbeat - even if status update failed,
+            // heartbeat will keep the job alive and visible
+            this.startHeartbeat(executionId, jobInfo.shortId);
+
+            if (!success) {
+              // Alert user that job status is stuck - they need to know tracking is broken
+              new Notice(`Warning: Job ${jobInfo.shortId} stuck in 'pending' - status update failed after retries`);
+              this.logSystemError(`Job ${jobInfo.shortId} failed to transition to 'running' after 3 retries - job will continue but tracking is broken`);
             }
           })
-          .catch(() => {
-            // Non-critical - job will still run, just won't show as "running"
+          .catch((err) => {
+            // Start heartbeat anyway - job is still running
+            this.startHeartbeat(executionId, jobInfo.shortId);
+            this.logSystemError(`Job ${jobInfo.shortId} status update threw error: ${err.message}`);
           });
       }
 

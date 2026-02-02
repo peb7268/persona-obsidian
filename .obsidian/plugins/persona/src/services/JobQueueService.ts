@@ -90,9 +90,9 @@ export class JobQueueService {
   }
 
   /**
-   * Call the Python bridge script
+   * Call the Python bridge script (single attempt)
    */
-  private async callBridge(command: string, ...args: string[]): Promise<any> {
+  private callBridgeOnce(command: string, ...args: string[]): Promise<any> {
     return new Promise((resolve, reject) => {
       const pythonDir = path.join(this.settings.personaRoot, 'python');
       const pythonExecutable = this.settings.pythonPath;
@@ -138,6 +138,64 @@ export class JobQueueService {
         reject(new Error(`Failed to run bridge script: ${err.message}`));
       });
     });
+  }
+
+  /**
+   * Check if an error is likely transient and worth retrying
+   */
+  private isRetryableError(error: Error): boolean {
+    const message = error.message.toLowerCase();
+    // Retry on network errors, connection issues, and rate limits
+    return (
+      message.includes('network') ||
+      message.includes('connection') ||
+      message.includes('timeout') ||
+      message.includes('econnrefused') ||
+      message.includes('econnreset') ||
+      message.includes('rate limit') ||
+      message.includes('429') ||
+      message.includes('503') ||
+      message.includes('502')
+    );
+  }
+
+  /**
+   * Call the Python bridge script with retry and exponential backoff
+   */
+  private async callBridge(command: string, ...args: string[]): Promise<any> {
+    const maxRetries = 3;
+    const baseDelayMs = 500;
+    const maxDelayMs = 5000;
+
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await this.callBridgeOnce(command, ...args);
+      } catch (error) {
+        lastError = error as Error;
+
+        // Don't retry non-transient errors (application errors, validation, etc.)
+        if (!this.isRetryableError(lastError)) {
+          throw lastError;
+        }
+
+        // Don't retry on last attempt
+        if (attempt === maxRetries - 1) {
+          break;
+        }
+
+        // Exponential backoff with jitter
+        const delay = Math.min(
+          baseDelayMs * Math.pow(2, attempt) + Math.random() * 100,
+          maxDelayMs
+        );
+        console.warn(`Bridge call '${command}' failed (attempt ${attempt + 1}/${maxRetries}), retrying in ${Math.round(delay)}ms:`, lastError.message);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    throw lastError;
   }
 
   /**
