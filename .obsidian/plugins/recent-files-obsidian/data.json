@@ -1,24 +1,32 @@
 {
   "recentFiles": [
     {
-      "basename": "Q-parallel-job-execution-resource-management",
-      "path": "Resources/Zettlekasten/Q-parallel-job-execution-resource-management.md"
-    },
-    {
-      "basename": "2026-02-01",
-      "path": "Resources/Agenda/Daily/2026-02-01.md"
+      "basename": "2026-02-02",
+      "path": "Resources/Agenda/Daily/2026-02-02.md"
     },
     {
       "basename": "2026-01-23",
       "path": "Resources/Agenda/Daily/2026-01-23.md"
     },
     {
-      "basename": "Q-wordpress-headless-testing",
-      "path": "Resources/Zettlekasten/Q-wordpress-headless-testing.md"
+      "basename": "2026-01-02",
+      "path": "Resources/Agenda/Daily/2026-01-02.md"
     },
     {
       "basename": "Home",
       "path": "Home.md"
+    },
+    {
+      "basename": "2026-02-01",
+      "path": "Resources/Agenda/Daily/2026-02-01.md"
+    },
+    {
+      "basename": "Q-parallel-job-execution-resource-management",
+      "path": "Resources/Zettlekasten/Q-parallel-job-execution-resource-management.md"
+    },
+    {
+      "basename": "Q-wordpress-headless-testing",
+      "path": "Resources/Zettlekasten/Q-wordpress-headless-testing.md"
     },
     {
       "basename": "2026-W6",
@@ -191,14 +199,6 @@
     {
       "basename": "CLAUDE",
       "path": "CLAUDE.md"
-    },
-    {
-      "basename": "GEMINI",
-      "path": "GEMINI.md"
-    },
-    {
-      "basename": "README",
-      "path": "README.md"
     }
   ],
   "omittedPaths": [],

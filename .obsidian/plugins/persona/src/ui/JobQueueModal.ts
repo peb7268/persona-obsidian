@@ -347,7 +347,8 @@ export class JobQueueModal extends Modal {
         const localResult = await this.jobQueueService.getLocalLogs(
           this.settings.business,
           job.assignedTo,
-          jobDate
+          jobDate,
+          job.shortId  // Pass job shortId to search job-specific log files
         );
         if (localResult.logs.length > 0) {
           logs = localResult.logs;
@@ -365,6 +366,20 @@ export class JobQueueModal extends Modal {
       if (logs.length === 0) {
         if (job.status === 'pending') {
           contentEl.createDiv({ text: 'Job hasn\'t started yet - logs will appear when running' });
+        } else if (job.status === 'failed' && !job.startedAt) {
+          contentEl.createDiv({ text: 'Job failed before starting - no logs were written' });
+        } else if (job.status === 'failed') {
+          const noLogsEl = contentEl.createDiv({ cls: 'logs-empty-state' });
+          noLogsEl.createDiv({ text: 'Job failed but no logs were captured' });
+          if (job.error) {
+            const errorEl = noLogsEl.createDiv({ cls: 'logs-error-info' });
+            errorEl.createEl('strong', { text: 'Error: ' });
+            errorEl.createSpan({ text: job.error });
+          }
+          noLogsEl.createDiv({
+            text: 'The agent may have crashed before writing logs, or there was a connection issue.',
+            cls: 'logs-hint'
+          });
         } else {
           contentEl.createDiv({ text: 'No logs available' });
         }

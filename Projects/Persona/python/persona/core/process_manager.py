@@ -5,6 +5,8 @@ import signal
 import os
 import threading
 import time
+import io
+import select
 from pathlib import Path
 from datetime import datetime
 import psutil
@@ -50,12 +52,17 @@ class ProcessManager:
         self._heartbeat_threads = {}
         self._processes = {}
 
-    def start_agent(self, job: Job) -> int:
+        # Log streaming configuration
+        self._log_batch_size = int(os.environ.get('LOG_BATCH_SIZE', '10'))
+        self._log_flush_interval = float(os.environ.get('LOG_FLUSH_INTERVAL', '5.0'))
+
+    def start_agent(self, job: Job, stream_to_supabase: bool = True) -> int:
         """
         Start a Claude agent for a job.
 
         Args:
             job: Job to execute
+            stream_to_supabase: If True, stream output to Supabase in real-time
 
         Returns:
             Process ID of started agent
@@ -71,12 +78,15 @@ class ProcessManager:
 
         self.job_store.log(job.id, "info", f"Starting agent: {' '.join(cmd)}")
 
-        with open(log_file, 'w') as stdout, open(error_file, 'w') as stderr:
+        # Use PIPE for streaming if enabled, otherwise write to files
+        if stream_to_supabase:
             process = subprocess.Popen(
                 cmd,
-                stdout=stdout,
-                stderr=stderr,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 start_new_session=True,  # Create new process group
+                bufsize=1,  # Line buffered
+                universal_newlines=True,  # Text mode for easier line reading
                 env={
                     **os.environ,
                     'PERSONA_JOB_ID': job.id,
@@ -85,16 +95,158 @@ class ProcessManager:
                 }
             )
 
-        # Update job with PID
-        self.job_store.start_job(job.id, process.pid)
+            # Update job with PID first
+            self.job_store.start_job(job.id, process.pid)
 
-        # Store process reference
-        self._processes[job.id] = process
+            # Store process reference
+            self._processes[job.id] = process
 
-        # Start heartbeat and monitoring thread
-        self._start_heartbeat(job.id, process)
+            # Start streaming threads (write to both file and Supabase)
+            self._start_streaming_threads(job, process, log_file, error_file)
+        else:
+            # Legacy: write directly to files
+            with open(log_file, 'w') as stdout, open(error_file, 'w') as stderr:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=stdout,
+                    stderr=stderr,
+                    start_new_session=True,
+                    env={
+                        **os.environ,
+                        'PERSONA_JOB_ID': job.id,
+                        'PERSONA_SHORT_ID': job.short_id,
+                        'PERSONA_JOB_TYPE': job.job_type,
+                    }
+                )
+
+            # Update job with PID
+            self.job_store.start_job(job.id, process.pid)
+
+            # Store process reference
+            self._processes[job.id] = process
+
+            # Start heartbeat and monitoring thread
+            self._start_heartbeat(job.id, process)
 
         return process.pid
+
+    def _start_streaming_threads(
+        self,
+        job: Job,
+        process: subprocess.Popen,
+        log_file: Path,
+        error_file: Path
+    ):
+        """
+        Start threads to stream stdout/stderr to both local files and Supabase.
+
+        Args:
+            job: Job being executed
+            process: Subprocess with PIPE stdout/stderr
+            log_file: Path to stdout log file
+            error_file: Path to stderr log file
+        """
+        stdout_buffer = []
+        stderr_buffer = []
+        buffer_lock = threading.Lock()
+        last_flush_time = [time.time()]
+
+        def stream_reader(stream, local_file_path, buffer, level):
+            """Read from stream, write to file, buffer for Supabase."""
+            with open(local_file_path, 'w') as f:
+                for line in iter(stream.readline, ''):
+                    if not line:
+                        break
+                    line = line.rstrip('\n')
+                    # Write to local file with timestamp
+                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    f.write(f"[{timestamp}] {line}\n")
+                    f.flush()
+
+                    # Add to buffer for Supabase
+                    with buffer_lock:
+                        buffer.append(line)
+
+                        # Flush if batch size reached
+                        if len(buffer) >= self._log_batch_size:
+                            self._flush_log_buffer(job.id, buffer, level)
+                            buffer.clear()
+                            last_flush_time[0] = time.time()
+
+        def buffer_flusher():
+            """Periodically flush buffers even if not full."""
+            heartbeat_interval = int(os.environ.get('JOB_HEARTBEAT_INTERVAL', '30'))
+
+            while process.poll() is None:
+                try:
+                    self.job_store.heartbeat(job.id)
+                except Exception as e:
+                    print(f"Heartbeat failed for {job.short_id}: {e}")
+
+                # Check if we should flush buffers based on time
+                with buffer_lock:
+                    if time.time() - last_flush_time[0] >= self._log_flush_interval:
+                        if stdout_buffer:
+                            self._flush_log_buffer(job.id, stdout_buffer.copy(), 'info')
+                            stdout_buffer.clear()
+                        if stderr_buffer:
+                            self._flush_log_buffer(job.id, stderr_buffer.copy(), 'error')
+                            stderr_buffer.clear()
+                        last_flush_time[0] = time.time()
+
+                time.sleep(min(heartbeat_interval, self._log_flush_interval))
+
+            # Final flush when process exits
+            with buffer_lock:
+                if stdout_buffer:
+                    self._flush_log_buffer(job.id, stdout_buffer.copy(), 'info')
+                    stdout_buffer.clear()
+                if stderr_buffer:
+                    self._flush_log_buffer(job.id, stderr_buffer.copy(), 'error')
+                    stderr_buffer.clear()
+
+            # Handle process exit
+            self._handle_process_exit(job.id, process)
+
+        # Start stdout reader thread
+        stdout_thread = threading.Thread(
+            target=stream_reader,
+            args=(process.stdout, log_file, stdout_buffer, 'info'),
+            daemon=True
+        )
+        stdout_thread.start()
+
+        # Start stderr reader thread
+        stderr_thread = threading.Thread(
+            target=stream_reader,
+            args=(process.stderr, error_file, stderr_buffer, 'error'),
+            daemon=True
+        )
+        stderr_thread.start()
+
+        # Start flusher/heartbeat thread
+        flusher_thread = threading.Thread(target=buffer_flusher, daemon=True)
+        flusher_thread.start()
+
+        self._heartbeat_threads[job.id] = flusher_thread
+
+    def _flush_log_buffer(self, job_id: str, messages: list, level: str):
+        """
+        Flush a buffer of log messages to Supabase.
+
+        Args:
+            job_id: Job ID
+            messages: List of log messages
+            level: Log level (info, error)
+        """
+        if not messages:
+            return
+
+        try:
+            self.job_store.log_batch(job_id, messages, level)
+        except Exception as e:
+            # Log locally but don't crash
+            print(f"Failed to flush logs to Supabase for {job_id}: {e}")
 
     def _build_command(self, job: Job) -> list[str]:
         """

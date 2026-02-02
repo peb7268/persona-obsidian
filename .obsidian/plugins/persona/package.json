@@ -23,6 +23,10 @@
   ],
   "author": "pbarrick",
   "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@supabase/supabase-js": "^2.93.3"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.0.0",

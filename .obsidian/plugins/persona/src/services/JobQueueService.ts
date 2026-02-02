@@ -14,6 +14,7 @@ export interface JobInfo {
   completedAt?: string;
   error?: string;
   result?: any;
+  payload?: any;
   pid?: number;
   exitCode?: number;
 }
@@ -281,6 +282,23 @@ export class JobQueueService {
   }
 
   /**
+   * Create a calendar fetch job
+   */
+  async createCalendarFetchJob(
+    date?: string,
+    calendars?: string[]
+  ): Promise<JobInfo> {
+    return this.createJob(
+      'calendar_fetch',
+      { date: date || new Date().toISOString().split('T')[0], calendars },
+      'calendar',
+      undefined,
+      undefined,
+      ['calendar', 'sync']
+    );
+  }
+
+  /**
    * Get job status by ID
    */
   async getJobStatus(jobId: string): Promise<JobInfo> {
@@ -338,13 +356,28 @@ export class JobQueueService {
 
   /**
    * Get logs from local log file (fallback when Supabase logs are empty)
+   *
+   * @param business - Business/instance name
+   * @param agent - Agent name
+   * @param date - Date string (YYYY-MM-DD)
+   * @param jobShortId - Optional job short ID for job-specific logs
    */
-  async getLocalLogs(business: string, agent: string, date: string): Promise<{ logs: JobLog[]; source: string; exists?: boolean }> {
-    const result = await this.callBridge('get_local_logs', business, agent, date);
+  async getLocalLogs(
+    business: string,
+    agent: string,
+    date: string,
+    jobShortId?: string
+  ): Promise<{ logs: JobLog[]; source: string; exists?: boolean; filesSearched?: string[] }> {
+    const args = [business, agent, date];
+    if (jobShortId) {
+      args.push(jobShortId);
+    }
+    const result = await this.callBridge('get_local_logs', ...args);
     return {
       logs: result.logs || [],
       source: 'local',
-      exists: result.exists ?? false
+      exists: result.exists ?? false,
+      filesSearched: result.files_searched || []
     };
   }
 
@@ -418,5 +451,54 @@ export class JobQueueService {
       String(days || 7)
     );
     return { metrics: result.metrics || [] };
+  }
+
+  /**
+   * Cancel all pending jobs (batch operation)
+   */
+  async cancelPendingJobs(reason?: string): Promise<{ cancelled: number; reason: string }> {
+    const result = await this.callBridge(
+      'cancel_pending_jobs',
+      reason || 'Batch cancelled - stuck in pending'
+    );
+    if (result.cancelled > 0) {
+      new Notice(`Cancelled ${result.cancelled} pending jobs`);
+    }
+    return result;
+  }
+
+  /**
+   * Log multiple messages at once for a job (streaming logs)
+   */
+  async logBatch(jobId: string, messages: string[], level?: string): Promise<{ success: boolean; count?: number; error?: string }> {
+    try {
+      const result = await this.callBridge(
+        'log_batch',
+        jobId,
+        JSON.stringify(messages),
+        level || 'info'
+      );
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  /**
+   * Log a single event for a job to Supabase
+   */
+  async logJobEvent(jobId: string, level: string, message: string, metadata?: Record<string, any>): Promise<{ success: boolean; error?: string }> {
+    try {
+      const args = [jobId, level, message];
+      if (metadata) {
+        args.push(JSON.stringify(metadata));
+      }
+      await this.callBridge('log_job_event', ...args);
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      return { success: false, error: errorMessage };
+    }
   }
 }

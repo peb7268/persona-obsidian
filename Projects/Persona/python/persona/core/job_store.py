@@ -287,6 +287,50 @@ class JobStore:
             completed_at=datetime.now(timezone.utc).isoformat()
         )
 
+    def cancel_all_pending(self, reason: str = "Batch cancelled") -> int:
+        """
+        Cancel all pending jobs in a single operation.
+
+        Args:
+            reason: Reason for cancellation
+
+        Returns:
+            Number of jobs cancelled
+        """
+        now = datetime.now(timezone.utc).isoformat()
+        result = self.client.table("jobs").update({
+            "status": JobStatus.CANCELLED.value,
+            "completed_at": now,
+            "error_message": reason
+        }).eq("status", JobStatus.PENDING.value).execute()
+
+        return len(result.data) if result.data else 0
+
+    def log_batch(self, job_id: str, messages: list[str], level: str = "info") -> None:
+        """
+        Insert multiple log entries at once for streaming logs.
+
+        Args:
+            job_id: Job ID (full UUID or short ID)
+            messages: List of log messages
+            level: Log level for all messages
+        """
+        job = self.get_job(job_id)
+        if not job or not messages:
+            return
+
+        entries = [
+            {
+                "job_id": job.id,
+                "level": level,
+                "message": msg,
+                "metadata": {}
+            }
+            for msg in messages
+        ]
+
+        self.client.table("job_logs").insert(entries).execute()
+
     def get_pending_jobs(self, assigned_to: str = None, limit: int = 10) -> list[Job]:
         """
         Get pending jobs, optionally filtered by agent.

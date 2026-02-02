@@ -6,6 +6,13 @@ import { TaskSyntaxService } from './services/TaskSyntaxService';
 import { JobQueueService } from './services/JobQueueService';
 import { QueueConsumerService } from './services/QueueConsumerService';
 import { ExecutionSlotManager } from './services/ExecutionSlotManager';
+import { EventService, JobChangeEvent } from './services/EventService';
+import { ServiceManager, createManagedService, LifecycleEvent } from './services/ServiceManager';
+import { MCPClientService, MCPHealthResult } from './services/MCPClientService';
+import { CalendarFetchService } from './services/CalendarFetchService';
+import { CalendarJobHandler } from './services/CalendarJobHandler';
+import { CalendarLogger } from './services/CalendarLogger';
+import { TimezoneResolver } from './services/TimezoneResolver';
 import { AgentModal } from './ui/AgentModal';
 import { StatusBarManager } from './ui/StatusBar';
 import { PersonaSettingTab } from './ui/SettingsTab';
@@ -23,17 +30,30 @@ export default class PersonaPlugin extends Plugin {
   jobQueueService: JobQueueService;
   queueConsumer: QueueConsumerService | null = null;
   slotManager: ExecutionSlotManager | null = null;
+  eventService: EventService | null = null;
+  serviceManager: ServiceManager | null = null;
   statusBar: StatusBarManager | null = null;
+  // Calendar/MCP services
+  mcpClient: MCPClientService | null = null;
+  calendarFetchService: CalendarFetchService | null = null;
+  calendarJobHandler: CalendarJobHandler | null = null;
+  calendarLogger: CalendarLogger | null = null;
   private ribbonIconEl: HTMLElement | null = null;
   private statusBarEl: HTMLElement | null = null;
   private fileWatcherRef: EventRef | null = null;
   private pollingInterval: ReturnType<typeof setInterval> | null = null;
   private processTimeout: ReturnType<typeof setTimeout> | null = null;
+  private calendarSchedulerInterval: ReturnType<typeof setInterval> | null = null;
+  private lastCalendarFetchDate: string | null = null;
+  private lifecycleUnsubscribe: (() => void) | null = null;
 
   async onload() {
+    console.log('[Persona] Plugin loading...');
+    const loadStart = Date.now();
+
     await this.loadSettings();
 
-    // Initialize services
+    // Initialize core services (non-async, no lifecycle management needed)
     this.jobQueueService = new JobQueueService(this.settings);
     this.executionService = new ExecutionService(this.settings, this.jobQueueService);
     this.syntaxParser = new SyntaxParser();
@@ -53,33 +73,96 @@ export default class PersonaPlugin extends Plugin {
     this.updateFileWatcher();
     this.updatePolling();
 
-    // Initialize queue consumer for active job polling
-    this.initializeQueueConsumer();
+    // Initialize ServiceManager for managed services
+    this.serviceManager = new ServiceManager('[Persona]');
+    this.serviceManager.setShutdownTimeout(5000);
+
+    // Subscribe to lifecycle events for logging
+    this.lifecycleUnsubscribe = this.serviceManager.onLifecycleEvent((event: LifecycleEvent) => {
+      this.logLifecycleEvent(event);
+    });
+
+    // Initialize and register managed services
+    await this.initializeQueueConsumer();
+
+    // Initialize calendar services if enabled
+    this.initializeCalendarServices();
+
+    // Start all managed services
+    if (this.settings.queueConsumerEnabled) {
+      await this.serviceManager.startAll();
+    }
+
+    const loadTime = Date.now() - loadStart;
+    console.log(`[Persona] Plugin loaded in ${loadTime}ms`);
   }
 
-  onunload() {
-    // Cleanup queue consumer
-    if (this.queueConsumer) {
-      this.queueConsumer.stop();
-      this.queueConsumer = null;
+  /**
+   * Log lifecycle events with consistent formatting
+   */
+  private logLifecycleEvent(event: LifecycleEvent): void {
+    const time = event.timestamp.toISOString().split('T')[1].split('.')[0];
+    const duration = event.durationMs ? ` (${event.durationMs}ms)` : '';
+    const details = event.details ? `: ${event.details}` : '';
+    console.log(`[Persona] [${time}] ${event.service} ${event.event}${duration}${details}`);
+  }
+
+  async onunload() {
+    console.log('[Persona] Plugin unloading...');
+    const unloadStart = Date.now();
+
+    // Stop all managed services via ServiceManager (handles timeouts and ordering)
+    if (this.serviceManager) {
+      await this.serviceManager.stopAll();
+      this.serviceManager = null;
     }
+
+    // Cleanup lifecycle listener
+    if (this.lifecycleUnsubscribe) {
+      this.lifecycleUnsubscribe();
+      this.lifecycleUnsubscribe = null;
+    }
+
+    // Cleanup MCP client (not managed by ServiceManager yet)
+    if (this.mcpClient) {
+      this.mcpClient.disconnect();
+      this.mcpClient = null;
+    }
+
+    // Cleanup calendar scheduler
+    if (this.calendarSchedulerInterval) {
+      clearInterval(this.calendarSchedulerInterval);
+      this.calendarSchedulerInterval = null;
+    }
+
     // Cleanup file watcher
     if (this.fileWatcherRef) {
       this.app.vault.offref(this.fileWatcherRef);
       this.fileWatcherRef = null;
     }
+
     // Cleanup polling
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
     }
+
     // Cleanup debounce timeout
     if (this.processTimeout) {
       clearTimeout(this.processTimeout);
       this.processTimeout = null;
     }
+
     // Cleanup progress polling
     this.stopProgressPolling();
+
+    // Clear service references
+    this.queueConsumer = null;
+    this.eventService = null;
+    this.slotManager = null;
+
+    const unloadTime = Date.now() - unloadStart;
+    console.log(`[Persona] Plugin unloaded in ${unloadTime}ms`);
   }
 
   async loadSettings() {
@@ -465,9 +548,12 @@ export default class PersonaPlugin extends Plugin {
   /**
    * Initialize the queue consumer service for active job polling
    */
-  private initializeQueueConsumer() {
+  private async initializeQueueConsumer() {
     // Create slot manager with configured max concurrent agents
     this.slotManager = new ExecutionSlotManager(this.settings.maxConcurrentAgents || 2);
+
+    // Create event service for Realtime subscriptions
+    this.eventService = new EventService(this.settings);
 
     // Create queue consumer
     this.queueConsumer = new QueueConsumerService(
@@ -477,28 +563,104 @@ export default class PersonaPlugin extends Plugin {
       this.settings
     );
 
-    // Start if enabled
-    if (this.settings.queueConsumerEnabled) {
-      this.queueConsumer.start();
+    // Wire up EventService to handle job status changes
+    this.eventService.onJobChange((event, job, oldJob) => {
+      this.handleJobEvent(event, job, oldJob);
+    });
+
+    // Register services with ServiceManager for unified lifecycle
+    if (this.serviceManager) {
+      // Register EventService (Supabase Realtime)
+      this.serviceManager.register(createManagedService(
+        'EventService',
+        async () => {
+          await this.eventService!.start();
+        },
+        async () => {
+          await this.eventService!.stop();
+        },
+        async () => this.eventService!.isConnected()
+      ));
+
+      // Register QueueConsumer (polls for pending jobs)
+      this.serviceManager.register(createManagedService(
+        'QueueConsumer',
+        async () => {
+          await this.queueConsumer!.start();
+        },
+        async () => {
+          this.queueConsumer!.stop();
+        },
+        async () => this.queueConsumer!.isRunning()
+      ));
+    }
+  }
+
+  /**
+   * Handle job events from Supabase Realtime
+   */
+  private handleJobEvent(event: JobChangeEvent, job: any, oldJob?: any): void {
+    // Update status bar with job status changes
+    if (this.statusBar && event === 'job:updated') {
+      // Detect status transitions
+      if (oldJob && oldJob.status !== job.status) {
+        console.log(`[Persona] Job ${job.shortId} status: ${oldJob.status} → ${job.status}`);
+
+        // Update UI based on new status
+        if (job.status === 'running') {
+          this.statusBar.showAgentRunning(job.assignedTo || 'agent', job.shortId);
+        } else if (job.status === 'completed') {
+          this.statusBar.showAgentCompleted(job.assignedTo || 'agent');
+          // Release slot when job completes
+          if (this.slotManager) {
+            this.slotManager.releaseSlotByJobId(job.shortId);
+          }
+        } else if (job.status === 'failed') {
+          this.statusBar.showAgentFailed(job.assignedTo || 'agent', job.error);
+          // Release slot when job fails
+          if (this.slotManager) {
+            this.slotManager.releaseSlotByJobId(job.shortId);
+          }
+        }
+      }
+    }
+
+    // Log new job creations
+    if (event === 'job:created') {
+      console.log(`[Persona] New job created: ${job.shortId} (${job.type})`);
     }
   }
 
   /**
    * Update queue consumer when settings change
    */
-  updateQueueConsumer() {
+  async updateQueueConsumer() {
     if (!this.queueConsumer) {
-      this.initializeQueueConsumer();
+      await this.initializeQueueConsumer();
       return;
     }
 
-    // Update settings and restart if needed
+    // Update settings on services
     this.queueConsumer.updateSettings(this.settings);
+    if (this.eventService) {
+      this.eventService.updateSettings(this.settings);
+    }
 
-    if (this.settings.queueConsumerEnabled && !this.queueConsumer.isRunning()) {
-      this.queueConsumer.start();
-    } else if (!this.settings.queueConsumerEnabled && this.queueConsumer.isRunning()) {
-      this.queueConsumer.stop();
+    // Use ServiceManager for coordinated start/stop
+    if (this.serviceManager) {
+      if (this.settings.queueConsumerEnabled) {
+        // Start all services if not already running
+        const health = await this.serviceManager.checkHealth();
+        const allHealthy = health.every(h => h.healthy);
+        if (!allHealthy) {
+          console.log('[Persona] Services not healthy, starting all...');
+          await this.serviceManager.startAll();
+        }
+      } else {
+        // Stop all services
+        console.log('[Persona] Queue consumer disabled, stopping services...');
+        await this.serviceManager.stopAll();
+      }
     }
   }
 
@@ -507,6 +669,26 @@ export default class PersonaPlugin extends Plugin {
    */
   getQueueConsumerStatus() {
     return this.queueConsumer?.getStatus() ?? null;
+  }
+
+  /**
+   * Get health status of all managed services (for UI/debugging)
+   */
+  async getServiceHealth() {
+    if (!this.serviceManager) {
+      return [];
+    }
+    return this.serviceManager.checkHealth();
+  }
+
+  /**
+   * Check if all services are ready and healthy
+   */
+  async isServicesReady(): Promise<boolean> {
+    if (!this.serviceManager) {
+      return false;
+    }
+    return this.serviceManager.isReady();
   }
 
   // Check for questions and process if found
@@ -536,5 +718,150 @@ export default class PersonaPlugin extends Plugin {
   // Get today's date string
   private getTodayString(): string {
     return new Date().toISOString().split('T')[0];
+  }
+
+  /**
+   * Initialize calendar-related services
+   */
+  private initializeCalendarServices() {
+    // Create calendar logger
+    this.calendarLogger = new CalendarLogger(this.settings);
+
+    // Create MCP client
+    this.mcpClient = new MCPClientService();
+
+    // Create timezone resolver
+    const timezoneResolver = new TimezoneResolver();
+
+    // Create calendar fetch service
+    this.calendarFetchService = new CalendarFetchService(
+      this.mcpClient,
+      this.calendarLogger,
+      timezoneResolver,
+      this.settings
+    );
+
+    // Create calendar job handler
+    this.calendarJobHandler = new CalendarJobHandler(
+      this.app,
+      this.calendarFetchService,
+      this.jobQueueService,
+      this.calendarLogger,
+      this.settings
+    );
+
+    // Wire up to queue consumer
+    if (this.queueConsumer) {
+      this.queueConsumer.setCalendarJobHandler(this.calendarJobHandler);
+    }
+
+    // Fetch on startup if enabled
+    if (this.settings.mcp.ical.enabled && this.settings.calendar.fetchOnStartup) {
+      // Delay to let Obsidian fully initialize
+      setTimeout(() => this.fetchTodaysCalendar(), 5000);
+    }
+
+    // Setup daily auto-fetch scheduler
+    this.setupCalendarScheduler();
+  }
+
+  /**
+   * Setup scheduler for daily calendar fetching.
+   * Checks every 15 minutes if we need to fetch today's calendar.
+   */
+  private setupCalendarScheduler() {
+    // Clear existing interval
+    if (this.calendarSchedulerInterval) {
+      clearInterval(this.calendarSchedulerInterval);
+    }
+
+    if (!this.settings.mcp.ical.enabled || !this.settings.calendar.autoFetchDaily) {
+      return;
+    }
+
+    // Check every 15 minutes
+    const CHECK_INTERVAL_MS = 15 * 60 * 1000;
+
+    this.calendarSchedulerInterval = setInterval(() => {
+      this.checkAndFetchCalendar();
+    }, CHECK_INTERVAL_MS);
+
+    // Also check immediately (after a short delay)
+    setTimeout(() => this.checkAndFetchCalendar(), 10000);
+  }
+
+  /**
+   * Check if we need to fetch calendar for today and do so if needed.
+   * Ensures idempotency - only fetches once per day.
+   */
+  private async checkAndFetchCalendar() {
+    if (!this.settings.mcp.ical.enabled || !this.settings.calendar.autoFetchDaily) {
+      return;
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Skip if already fetched today
+    if (this.lastCalendarFetchDate === today) {
+      return;
+    }
+
+    try {
+      // Check if there's already a calendar job for today
+      const pendingJobs = await this.jobQueueService.getPendingJobs('calendar');
+      const runningJobs = await this.jobQueueService.getRunningJobs('calendar');
+
+      const hasTodayJob = [...pendingJobs, ...runningJobs].some(job => {
+        const jobDate = job.payload?.date || job.createdAt?.split('T')[0];
+        return jobDate === today;
+      });
+
+      if (hasTodayJob) {
+        // Already have a job for today, mark as fetched
+        this.lastCalendarFetchDate = today;
+        return;
+      }
+
+      // Create new calendar fetch job
+      await this.fetchTodaysCalendar();
+      this.lastCalendarFetchDate = today;
+    } catch (err) {
+      console.error('Calendar scheduler error:', err);
+    }
+  }
+
+  /**
+   * Test MCP connection (called from settings)
+   */
+  async testMCPConnection(): Promise<MCPHealthResult> {
+    if (!this.mcpClient) {
+      return {
+        connected: false,
+        serverName: 'ical',
+        error: 'MCP client not initialized',
+      };
+    }
+
+    const config = MCPClientService.configFromSettings(this.settings.mcp.ical);
+    return this.mcpClient.testConnection();
+  }
+
+  /**
+   * Fetch today's calendar events (creates a job)
+   */
+  async fetchTodaysCalendar(): Promise<void> {
+    if (!this.settings.mcp.ical.enabled) {
+      new Notice('Calendar integration not enabled');
+      return;
+    }
+
+    try {
+      const job = await this.jobQueueService.createCalendarFetchJob();
+      new Notice(`Calendar job created: ${job.shortId}`);
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      new Notice(`Failed to create calendar job: ${error}`);
+      throw err;
+    }
   }
 }

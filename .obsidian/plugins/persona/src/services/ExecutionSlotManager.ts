@@ -22,6 +22,7 @@ export interface IExecutionSlotManager {
   getActiveSlots(): SlotInfo[];
   getMaxSlots(): number;
   setMaxSlots(max: number): void;
+  getStatus(): { activeSlots: number; maxSlots: number; availableSlots: number; runningAgents: string[] };
 }
 
 export class ExecutionSlotManager implements IExecutionSlotManager {
@@ -70,6 +71,20 @@ export class ExecutionSlotManager implements IExecutionSlotManager {
       this.agentToSlot.delete(slot.agent);
       this.slots.delete(slotId);
     }
+  }
+
+  /**
+   * Release a slot by job ID (used by EventService when job completes via Realtime)
+   */
+  releaseSlotByJobId(jobId: string): boolean {
+    for (const [slotId, slot] of this.slots.entries()) {
+      if (slot.jobId === jobId) {
+        this.agentToSlot.delete(slot.agent);
+        this.slots.delete(slotId);
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -126,5 +141,17 @@ export class ExecutionSlotManager implements IExecutionSlotManager {
    */
   getRunningAgents(): string[] {
     return Array.from(this.agentToSlot.keys());
+  }
+
+  /**
+   * Get a summary of current slot status (for diagnostic logging)
+   */
+  getStatus(): { activeSlots: number; maxSlots: number; availableSlots: number; runningAgents: string[] } {
+    return {
+      activeSlots: this.slots.size,
+      maxSlots: this.maxSlots,
+      availableSlots: this.getAvailableSlots(),
+      runningAgents: this.getRunningAgents(),
+    };
   }
 }

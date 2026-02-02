@@ -26,6 +26,7 @@ describe('QueueConsumerService', () => {
     mockJobQueueService = {
       getPendingJobs: jest.fn().mockResolvedValue([]),
       getRunningJobs: jest.fn().mockResolvedValue([]),
+      getHungJobs: jest.fn().mockResolvedValue([]), // For orphan cleanup on start
       updateJobStatus: jest.fn().mockResolvedValue({ success: true }),
       heartbeat: jest.fn().mockResolvedValue({ success: true }),
     } as unknown as jest.Mocked<JobQueueService>;
@@ -59,27 +60,47 @@ describe('QueueConsumerService', () => {
   });
 
   describe('start/stop lifecycle', () => {
-    it('should start polling when start() is called', () => {
-      queueConsumer.start();
+    it('should start polling when start() is called', async () => {
+      await queueConsumer.start();
       expect(queueConsumer.isRunning()).toBe(true);
     });
 
-    it('should stop polling when stop() is called', () => {
-      queueConsumer.start();
+    it('should stop polling when stop() is called', async () => {
+      await queueConsumer.start();
       queueConsumer.stop();
       expect(queueConsumer.isRunning()).toBe(false);
     });
 
-    it('should not start twice', () => {
+    it('should not start twice', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      queueConsumer.start();
-      queueConsumer.start();
-      expect(consoleSpy).toHaveBeenCalledWith('QueueConsumerService already running');
+      await queueConsumer.start();
+      await queueConsumer.start();
+      expect(consoleSpy).toHaveBeenCalledWith('[QueueConsumer] Already running');
       consoleSpy.mockRestore();
     });
 
     it('should be safe to stop when not running', () => {
       expect(() => queueConsumer.stop()).not.toThrow();
+    });
+
+    it('should cleanup orphaned jobs on start', async () => {
+      const hungJob = {
+        id: 'uuid-hung',
+        shortId: 'hung123',
+        type: 'research',
+        status: 'running',
+        assignedTo: 'researcher',
+      };
+      mockJobQueueService.getHungJobs.mockResolvedValue([hungJob]);
+
+      await queueConsumer.start();
+
+      expect(mockJobQueueService.getHungJobs).toHaveBeenCalled();
+      expect(mockJobQueueService.updateJobStatus).toHaveBeenCalledWith(
+        'hung123',
+        'failed',
+        expect.stringContaining('Orphaned')
+      );
     });
   });
 
@@ -94,8 +115,8 @@ describe('QueueConsumerService', () => {
       expect(status.runningAgents).toEqual([]);
     });
 
-    it('should return running status after start', () => {
-      queueConsumer.start();
+    it('should return running status after start', async () => {
+      await queueConsumer.start();
       const status = queueConsumer.getStatus();
       expect(status.running).toBe(true);
     });
@@ -103,7 +124,7 @@ describe('QueueConsumerService', () => {
 
   describe('polling behavior', () => {
     it('should poll after initial delay', async () => {
-      queueConsumer.start();
+      await queueConsumer.start();
 
       // Advance past initial delay (1 second)
       jest.advanceTimersByTime(1000);
@@ -113,7 +134,7 @@ describe('QueueConsumerService', () => {
     });
 
     it('should poll at configured interval', async () => {
-      queueConsumer.start();
+      await queueConsumer.start();
 
       // Initial poll
       jest.advanceTimersByTime(1000);
@@ -127,7 +148,7 @@ describe('QueueConsumerService', () => {
     });
 
     it('should update lastPollTime when polling', async () => {
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
 
@@ -151,7 +172,7 @@ describe('QueueConsumerService', () => {
     it('should dispatch pending jobs to ExecutionService', async () => {
       mockJobQueueService.getPendingJobs.mockResolvedValue([mockJob]);
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
       await Promise.resolve(); // Additional tick for async dispatch
@@ -164,7 +185,7 @@ describe('QueueConsumerService', () => {
       mockJobQueueService.getPendingJobs.mockResolvedValue([jobWithoutAgent as JobInfo]);
 
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
 
@@ -178,7 +199,7 @@ describe('QueueConsumerService', () => {
       slotManager.acquireSlot('researcher', 'existing-job');
       mockJobQueueService.getPendingJobs.mockResolvedValue([mockJob]);
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
 
@@ -189,7 +210,7 @@ describe('QueueConsumerService', () => {
       mockExecutionService.isAgentRunning.mockReturnValue(true);
       mockJobQueueService.getPendingJobs.mockResolvedValue([mockJob]);
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
 
@@ -203,7 +224,7 @@ describe('QueueConsumerService', () => {
 
       mockJobQueueService.getPendingJobs.mockResolvedValue([job1, job2, job3]);
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
       await Promise.resolve();
@@ -218,7 +239,7 @@ describe('QueueConsumerService', () => {
 
       mockJobQueueService.getPendingJobs.mockResolvedValue([job1, job2]);
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
       await Promise.resolve();
@@ -237,8 +258,8 @@ describe('QueueConsumerService', () => {
       expect(status.maxConcurrent).toBe(5);
     });
 
-    it('should restart with new interval if running', () => {
-      queueConsumer.start();
+    it('should restart with new interval if running', async () => {
+      await queueConsumer.start();
       expect(queueConsumer.isRunning()).toBe(true);
 
       const newSettings = { ...mockSettings, queuePollIntervalSeconds: 60 };
@@ -252,7 +273,7 @@ describe('QueueConsumerService', () => {
 
   describe('pollNow', () => {
     it('should trigger immediate poll when running', async () => {
-      queueConsumer.start();
+      await queueConsumer.start();
       mockJobQueueService.getPendingJobs.mockClear(); // Clear initial poll calls
       await queueConsumer.pollNow();
       expect(mockJobQueueService.getPendingJobs).toHaveBeenCalled();
@@ -286,7 +307,7 @@ describe('QueueConsumerService', () => {
 
       mockJobQueueService.getPendingJobs.mockResolvedValue([jobWithAction]);
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
       await Promise.resolve();
@@ -308,7 +329,7 @@ describe('QueueConsumerService', () => {
 
       mockJobQueueService.getPendingJobs.mockResolvedValue([jobWithoutAction]);
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
       await Promise.resolve();
@@ -322,7 +343,7 @@ describe('QueueConsumerService', () => {
       mockJobQueueService.getPendingJobs.mockRejectedValue(new Error('Network error'));
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
 
@@ -347,7 +368,7 @@ describe('QueueConsumerService', () => {
       mockExecutionService.runAgent.mockRejectedValue(new Error('Execution failed'));
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      queueConsumer.start();
+      await queueConsumer.start();
       jest.advanceTimersByTime(1000);
       await Promise.resolve();
       await Promise.resolve();

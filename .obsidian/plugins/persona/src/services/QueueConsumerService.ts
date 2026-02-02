@@ -11,6 +11,7 @@
 import { JobQueueService, JobInfo } from './JobQueueService';
 import { ExecutionService } from './ExecutionService';
 import { ExecutionSlotManager } from './ExecutionSlotManager';
+import { CalendarJobHandler, CalendarJobResult } from './CalendarJobHandler';
 import { PersonaSettings } from '../types';
 
 export interface ConsumerStatus {
@@ -27,6 +28,7 @@ export class QueueConsumerService {
   private running = false;
   private lastPollTime: Date | null = null;
   private pendingDispatches: Map<string, Promise<void>> = new Map();
+  private calendarJobHandler: CalendarJobHandler | null = null;
 
   constructor(
     private jobQueueService: JobQueueService,
@@ -36,16 +38,26 @@ export class QueueConsumerService {
   ) {}
 
   /**
+   * Set the calendar job handler (injected from main.ts)
+   */
+  setCalendarJobHandler(handler: CalendarJobHandler): void {
+    this.calendarJobHandler = handler;
+  }
+
+  /**
    * Start the queue consumer polling loop
    */
-  start(): void {
+  async start(): Promise<void> {
     if (this.running) {
-      console.log('QueueConsumerService already running');
+      console.log('[QueueConsumer] Already running');
       return;
     }
 
     this.running = true;
-    console.log(`QueueConsumerService started (interval: ${this.settings.queuePollIntervalSeconds}s, max concurrent: ${this.settings.maxConcurrentAgents})`);
+    console.log(`[QueueConsumer] Starting (interval: ${this.settings.queuePollIntervalSeconds}s, max concurrent: ${this.settings.maxConcurrentAgents})`);
+
+    // Clean up orphaned jobs on startup
+    await this.cleanupOrphanedJobs();
 
     // Initial poll after short delay
     setTimeout(() => this.poll(), 1000);
@@ -55,6 +67,36 @@ export class QueueConsumerService {
     this.pollInterval = setInterval(() => {
       this.poll();
     }, intervalMs);
+  }
+
+  /**
+   * Clean up jobs that were orphaned (stuck in "running" state from a previous session)
+   */
+  private async cleanupOrphanedJobs(): Promise<void> {
+    try {
+      const hungThresholdMinutes = this.settings.hungThresholdMinutes || 10;
+      const hungJobs = await this.jobQueueService.getHungJobs(hungThresholdMinutes);
+
+      if (hungJobs.length === 0) {
+        console.log('[QueueConsumer] No orphaned jobs found');
+        return;
+      }
+
+      console.warn(`[QueueConsumer] Found ${hungJobs.length} orphaned job(s), marking as failed`);
+
+      for (const job of hungJobs) {
+        console.warn(`[QueueConsumer] Marking orphaned job ${job.shortId} (${job.assignedTo}) as failed - no heartbeat for ${hungThresholdMinutes}+ minutes`);
+        await this.jobQueueService.updateJobStatus(
+          job.shortId,
+          'failed',
+          `Orphaned - no heartbeat for ${hungThresholdMinutes}+ minutes (cleaned up on startup)`
+        );
+      }
+
+      console.log(`[QueueConsumer] Cleaned up ${hungJobs.length} orphaned job(s)`);
+    } catch (error) {
+      console.error('[QueueConsumer] Failed to clean up orphaned jobs:', error);
+    }
   }
 
   /**
@@ -127,15 +169,27 @@ export class QueueConsumerService {
         return;
       }
 
+      const slotStatus = this.slotManager.getStatus();
+      console.log(`[QueueConsumer] Poll: ${pendingJobs.length} pending jobs, ${slotStatus.activeSlots}/${slotStatus.maxSlots} slots used`);
+
       // Try to dispatch jobs while we have capacity
+      let dispatched = 0;
       for (const job of pendingJobs) {
         if (!this.running) break;
-        if (!this.slotManager.hasCapacity()) break;
+        if (!this.slotManager.hasCapacity()) {
+          console.log(`[QueueConsumer] No capacity remaining, ${pendingJobs.length - dispatched} jobs still pending`);
+          break;
+        }
 
-        await this.tryDispatchJob(job);
+        const success = await this.tryDispatchJob(job);
+        if (success) dispatched++;
+      }
+
+      if (dispatched > 0) {
+        console.log(`[QueueConsumer] Dispatched ${dispatched} job(s) this poll cycle`);
       }
     } catch (error) {
-      console.error('QueueConsumerService poll error:', error);
+      console.error('[QueueConsumer] Poll error:', error);
     }
   }
 
@@ -147,25 +201,37 @@ export class QueueConsumerService {
 
     // Skip jobs without an assigned agent
     if (!agent) {
-      console.warn(`Job ${job.shortId} has no assigned agent, skipping`);
+      console.warn(`[QueueConsumer] Skipping job ${job.shortId}: no assignedTo field`);
       return false;
     }
 
     // Check if this agent is already running (in our slot manager)
     if (this.slotManager.isAgentRunning(agent)) {
+      console.log(`[QueueConsumer] Skipping job ${job.shortId}: agent "${agent}" already running in slot`);
       return false;
     }
 
     // Also check ExecutionService's running state (for agents started outside consumer)
     if (this.executionService.isAgentRunning(agent)) {
+      console.log(`[QueueConsumer] Skipping job ${job.shortId}: agent "${agent}" already running (external)`);
+      return false;
+    }
+
+    // Check capacity before acquiring
+    if (!this.slotManager.hasCapacity()) {
+      const status = this.slotManager.getStatus();
+      console.log(`[QueueConsumer] Queue blocked: ${status.activeSlots}/${status.maxSlots} slots full (running: ${status.runningAgents.join(', ')})`);
       return false;
     }
 
     // Try to acquire a slot
     const slotId = this.slotManager.acquireSlot(agent, job.shortId);
     if (slotId === null) {
+      console.warn(`[QueueConsumer] Failed to acquire slot for job ${job.shortId}`);
       return false;
     }
+
+    console.log(`[QueueConsumer] Dispatching job ${job.shortId} to agent "${agent}" (slot ${slotId})`);
 
     // Dispatch the job (don't await - let it run in background)
     const dispatchPromise = this.executeJobInSlot(job, slotId);
@@ -181,6 +247,12 @@ export class QueueConsumerService {
     const agent = job.assignedTo!;
 
     try {
+      // Handle calendar_fetch jobs directly (no agent spawn)
+      if (job.type === 'calendar_fetch') {
+        await this.executeCalendarJob(job);
+        return;
+      }
+
       // Extract action from job payload
       const action = this.getActionFromJob(job);
 
@@ -200,6 +272,41 @@ export class QueueConsumerService {
       // Always release the slot
       this.slotManager.releaseSlot(slotId);
       this.pendingDispatches.delete(job.shortId);
+    }
+  }
+
+  /**
+   * Execute a calendar_fetch job directly (no agent spawn)
+   */
+  private async executeCalendarJob(job: JobInfo): Promise<void> {
+    if (!this.calendarJobHandler) {
+      console.error(`CalendarJobHandler not set, cannot process job ${job.shortId}`);
+      await this.jobQueueService.updateJobStatus(
+        job.shortId,
+        'failed',
+        'Calendar service not initialized'
+      );
+      return;
+    }
+
+    // Mark job as running
+    await this.jobQueueService.updateJobStatus(job.shortId, 'running');
+
+    try {
+      console.log(`QueueConsumer processing calendar job ${job.shortId}`);
+      const result: CalendarJobResult = await this.calendarJobHandler.handleJob(job);
+
+      if (result.success) {
+        console.log(`Calendar job ${job.shortId} completed: ${result.notesCreated.length} notes created`);
+        await this.jobQueueService.updateJobStatus(job.shortId, 'completed');
+      } else {
+        console.log(`Calendar job ${job.shortId} failed: ${result.error}`);
+        await this.jobQueueService.updateJobStatus(job.shortId, 'failed', result.error);
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`Calendar job ${job.shortId} error:`, error);
+      await this.jobQueueService.updateJobStatus(job.shortId, 'failed', errorMsg);
     }
   }
 

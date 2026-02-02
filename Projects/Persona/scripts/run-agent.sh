@@ -440,6 +440,55 @@ acquire_lock
 # Register start
 register_start
 
+# ============================================================================
+# EVENT PUBLISHING (Unified Eventing System)
+# ============================================================================
+# Publish events to Supabase via bridge.py's publish_event function
+# Events are:
+# 1. Sent to pgmq queue (guaranteed delivery)
+# 2. Logged to events table (observability/audit trail)
+# 3. Update jobs table status (triggers Realtime for UI)
+#
+# Environment variables:
+# - PERSONA_JOB_ID: Job short ID (from ExecutionService.ts)
+# - PERSONA_SUPABASE_URL: Supabase URL
+# - PERSONA_SUPABASE_KEY: Supabase service role key
+# - EXEC_ID: Execution trace ID for correlating events
+
+publish_event() {
+    local event_type="$1"
+    local data="$2"
+
+    # Skip if no job ID (not launched via queue consumer)
+    if [ -z "$PERSONA_JOB_ID" ]; then
+        return 0
+    fi
+
+    # Skip if no Supabase config
+    if [ -z "$PERSONA_SUPABASE_URL" ] || [ -z "$PERSONA_SUPABASE_KEY" ]; then
+        log "WARNING: Supabase not configured, skipping event publish"
+        return 0
+    fi
+
+    log "Publishing event: $event_type for job $PERSONA_JOB_ID"
+
+    # Call bridge.py to publish event (fire-and-forget, don't fail the script)
+    PYTHONPATH="$PERSONA_ROOT/python" \
+    SUPABASE_URL="$PERSONA_SUPABASE_URL" \
+    SUPABASE_KEY="$PERSONA_SUPABASE_KEY" \
+    PERSONA_EXEC_ID="$EXEC_ID" \
+    python3 "$PERSONA_ROOT/python/persona/bridge.py" \
+        publish_event "$event_type" "$PERSONA_JOB_ID" "$data" "bash" 2>/dev/null || {
+        log "WARNING: Failed to publish event (bridge.py error)"
+        return 0  # Don't fail the script
+    }
+
+    log "Event published successfully: $event_type"
+}
+
+# Publish job.started event now that we have the lock
+publish_event "job.started" "{\"pid\":$$}"
+
 # Initialize progress tracking
 init_progress
 
@@ -454,6 +503,8 @@ if [ "$AGENT" = "researcher" ] && [ "$ACTION" = "process-research-queue" ]; then
         update_progress "completed" "No questions to process" 0
         clear_progress "completed"
         update_execution_status "success" "no_questions" 0 0
+        # Publish job.completed event (no work needed)
+        publish_event "job.completed" "{\"output_size\":0,\"skipped\":true,\"reason\":\"no_questions\"}"
         exit 0
     fi
 fi
@@ -607,6 +658,8 @@ if [ $CLAUDE_EXIT_CODE -eq 143 ] || [ $CLAUDE_EXIT_CODE -eq 137 ]; then
     log "ERROR: $PROVIDER_NAME execution timed out after ${TIMEOUT}s"
     update_execution_status "failed" "timeout" 124 0
     clear_progress "timeout"
+    # Publish job.failed event (timeout)
+    publish_event "job.failed" "{\"error\":\"Timeout: exceeded ${TIMEOUT}s limit\",\"timeout\":true,\"exit_code\":124}"
     exit 124
 fi
 PROVIDER_OUTPUT_SIZE=$(wc -c < "$PROVIDER_OUTPUT_FILE" 2>/dev/null | xargs || echo 0)
@@ -622,13 +675,19 @@ if [ $CLAUDE_EXIT_CODE -ne 0 ]; then
     log "ERROR: $PROVIDER_NAME execution failed with exit code $CLAUDE_EXIT_CODE"
     update_execution_status "failed" "provider_error" $CLAUDE_EXIT_CODE $PROVIDER_OUTPUT_SIZE
     clear_progress "failed"
+    # Publish job.failed event
+    publish_event "job.failed" "{\"error\":\"Provider error: exit code $CLAUDE_EXIT_CODE\",\"exit_code\":$CLAUDE_EXIT_CODE,\"output_size\":$PROVIDER_OUTPUT_SIZE}"
     exit $CLAUDE_EXIT_CODE
 elif [ "$PROVIDER_OUTPUT_SIZE" -lt 100 ]; then
     log "WARNING: $PROVIDER_NAME produced minimal output ($PROVIDER_OUTPUT_SIZE bytes) - possible issue"
     update_execution_status "completed" "minimal_output" 0 $PROVIDER_OUTPUT_SIZE
     clear_progress "completed"
+    # Publish job.completed event (minimal output is still success)
+    publish_event "job.completed" "{\"output_size\":$PROVIDER_OUTPUT_SIZE,\"minimal_output\":true}"
 else
     log "SUCCESS: Agent execution completed with $PROVIDER_OUTPUT_SIZE bytes output"
     update_execution_status "success" "full_output" 0 $PROVIDER_OUTPUT_SIZE
     clear_progress "success"
+    # Publish job.completed event
+    publish_event "job.completed" "{\"output_size\":$PROVIDER_OUTPUT_SIZE}"
 fi

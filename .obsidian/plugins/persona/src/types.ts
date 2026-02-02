@@ -4,6 +4,40 @@ import { RoutingConfig, DEFAULT_ROUTING_CONFIG } from './services/RoutingService
 // Re-export for convenience
 export type { RoutingConfig } from './services/RoutingService';
 
+// MCP Server settings
+export interface MCPICalSettings {
+  enabled: boolean;
+  command: string;
+  args: string[];
+  enabledCalendars: string[];
+}
+
+export interface MCPSettings {
+  ical: MCPICalSettings;
+}
+
+export const DEFAULT_MCP_SETTINGS: MCPSettings = {
+  ical: {
+    enabled: false,
+    command: 'uvx',
+    args: ['mcp-ical'],
+    enabledCalendars: [], // Empty = all calendars
+  },
+};
+
+// Calendar settings
+export interface CalendarSettings {
+  autoFetchDaily: boolean;
+  fetchOnStartup: boolean;
+  meetingNoteFolder: string;
+}
+
+export const DEFAULT_CALENDAR_SETTINGS: CalendarSettings = {
+  autoFetchDaily: false,
+  fetchOnStartup: false,
+  meetingNoteFolder: 'Archive/Meetings',
+};
+
 export interface PersonaSettings {
   personaRoot: string;
   business: string;
@@ -36,6 +70,10 @@ export interface PersonaSettings {
   queueConsumerEnabled: boolean;
   queuePollIntervalSeconds: number;
   maxConcurrentAgents: number;
+  // MCP settings
+  mcp: MCPSettings;
+  // Calendar settings
+  calendar: CalendarSettings;
 }
 
 export const DEFAULT_SETTINGS: PersonaSettings = {
@@ -70,6 +108,10 @@ export const DEFAULT_SETTINGS: PersonaSettings = {
   queueConsumerEnabled: true,
   queuePollIntervalSeconds: 30,
   maxConcurrentAgents: 2,
+  // MCP defaults
+  mcp: DEFAULT_MCP_SETTINGS,
+  // Calendar defaults
+  calendar: DEFAULT_CALENDAR_SETTINGS,
 };
 
 export interface AgentDefinition {

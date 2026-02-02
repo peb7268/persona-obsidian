@@ -252,4 +252,54 @@ export class StatusBarManager {
     this.settings.business = business;
     this.setReady();
   }
+
+  /**
+   * Show that an agent is running (called from EventService on job.started)
+   */
+  showAgentRunning(agent: string, jobId?: string) {
+    this.statusBarEl.empty();
+    this.statusBarEl.addClass('persona-status-running');
+    this.statusBarEl.removeClass('persona-status-error');
+
+    // Add spinning indicator
+    this.statusBarEl.createSpan({ cls: 'persona-spinner' });
+
+    // Add agent name
+    this.statusBarEl.createSpan({ text: ` ${agent}` });
+
+    // Add job ID if provided
+    if (jobId) {
+      this.statusBarEl.createSpan({ text: ` (${jobId})`, cls: 'persona-job-id' });
+    }
+  }
+
+  /**
+   * Show that an agent completed (called from EventService on job.completed)
+   */
+  showAgentCompleted(agent: string) {
+    this.statusBarEl.removeClass('persona-status-running');
+    this.statusBarEl.removeClass('persona-status-error');
+    this.statusBarEl.setText(`Persona: ${agent} completed`);
+
+    // Reset to ready state after a short delay
+    setTimeout(() => {
+      this.setReady();
+    }, 3000);
+  }
+
+  /**
+   * Show that an agent failed (called from EventService on job.failed)
+   */
+  showAgentFailed(agent: string, error?: string) {
+    this.statusBarEl.removeClass('persona-status-running');
+    this.statusBarEl.addClass('persona-status-error');
+
+    const errorMsg = error ? `: ${error.slice(0, 30)}` : '';
+    this.statusBarEl.setText(`Persona: ${agent} failed${errorMsg}`);
+
+    // Reset to ready state after a longer delay
+    setTimeout(() => {
+      this.setReady();
+    }, 5000);
+  }
 }

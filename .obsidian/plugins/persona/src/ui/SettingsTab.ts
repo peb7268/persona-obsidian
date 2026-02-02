@@ -356,5 +356,121 @@ export class PersonaSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    // MCP Servers section
+    containerEl.createEl('h3', { text: 'MCP Servers' });
+
+    new Setting(containerEl)
+      .setName('Enable Calendar (mcp-ical)')
+      .setDesc('Fetch calendar events via MCP server for meeting note creation')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.mcp.ical.enabled)
+          .onChange(async (value) => {
+            this.plugin.settings.mcp.ical.enabled = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('MCP-iCal command')
+      .setDesc('Command to run mcp-ical (default: uvx)')
+      .addText((text) =>
+        text
+          .setPlaceholder('uvx')
+          .setValue(this.plugin.settings.mcp.ical.command)
+          .onChange(async (value) => {
+            this.plugin.settings.mcp.ical.command = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Test MCP connection')
+      .setDesc('Verify mcp-ical server is accessible')
+      .addButton((button) =>
+        button
+          .setButtonText('Test Connection')
+          .onClick(async () => {
+            button.setButtonText('Testing...');
+            button.setDisabled(true);
+            try {
+              const result = await this.plugin.testMCPConnection?.();
+              if (result?.connected) {
+                button.setButtonText('✓ Connected');
+              } else {
+                button.setButtonText(`✗ ${result?.error || 'Failed'}`);
+              }
+            } catch (err) {
+              button.setButtonText('✗ Error');
+            }
+            setTimeout(() => {
+              button.setButtonText('Test Connection');
+              button.setDisabled(false);
+            }, 3000);
+          })
+      );
+
+    // Calendar Settings section
+    containerEl.createEl('h3', { text: 'Calendar Integration' });
+
+    new Setting(containerEl)
+      .setName('Meeting note folder')
+      .setDesc('Base folder for meeting notes (subfolders created by category)')
+      .addText((text) =>
+        text
+          .setPlaceholder('Archive/Meetings')
+          .setValue(this.plugin.settings.calendar.meetingNoteFolder)
+          .onChange(async (value) => {
+            this.plugin.settings.calendar.meetingNoteFolder = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Auto-fetch daily')
+      .setDesc('Automatically fetch calendar events each morning')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.calendar.autoFetchDaily)
+          .onChange(async (value) => {
+            this.plugin.settings.calendar.autoFetchDaily = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Fetch on startup')
+      .setDesc('Fetch today\'s calendar events when Obsidian starts')
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.calendar.fetchOnStartup)
+          .onChange(async (value) => {
+            this.plugin.settings.calendar.fetchOnStartup = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Fetch today\'s meetings')
+      .setDesc('Create a calendar job to fetch meetings and create notes')
+      .addButton((button) =>
+        button
+          .setButtonText('Fetch Now')
+          .onClick(async () => {
+            button.setButtonText('Fetching...');
+            button.setDisabled(true);
+            try {
+              await this.plugin.fetchTodaysCalendar?.();
+              button.setButtonText('✓ Job Created');
+            } catch (err) {
+              button.setButtonText('✗ Error');
+            }
+            setTimeout(() => {
+              button.setButtonText('Fetch Now');
+              button.setDisabled(false);
+            }, 3000);
+          })
+      );
   }
 }

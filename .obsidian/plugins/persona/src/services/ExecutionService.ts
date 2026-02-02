@@ -471,9 +471,17 @@ export class ExecutionService {
     const timeoutMs = (this.settings.agentTimeoutMinutes || 5) * 60 * 1000;
 
     return new Promise((resolve) => {
+      // Pass job tracking info to bash script via environment variables
+      // This enables the bash script to update job status directly as a backup
+      // (belt-and-suspenders: both TypeScript and bash try to update status)
       const childProcess = spawn('bash', [scriptPath, business, agent, action], {
         cwd: this.settings.personaRoot,
-        env: { ...process.env },
+        env: {
+          ...process.env,
+          PERSONA_JOB_ID: jobInfo?.shortId || '',
+          PERSONA_SUPABASE_URL: this.settings.supabaseUrl || '',
+          PERSONA_SUPABASE_KEY: this.settings.supabaseKey || '',
+        },
       });
 
       // Update with PID for orphan cleanup tracking

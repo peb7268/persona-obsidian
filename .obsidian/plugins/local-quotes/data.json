@@ -12,11 +12,11 @@
     {
       "content": {
         "author": "Working Out",
-        "text": "\"I hated every minute of training, but I said, ‘Don’t quit. Suffer now and live the rest of your life as a champion. - Muhammad Ali” ."
+        "text": "\"The last three or four reps is what makes the muscle grow. This area of pain divides a champion from someone who is not a champion. – Arnold Schwarzenegger\""
       },
       "customClass": null,
       "id": "FnPcn",
-      "lastUpdate": 1769948756.662,
+      "lastUpdate": 1770039734.173,
       "refresh": 86400,
       "search": "Working Out"
     },
@@ -34,6 +34,19 @@
   ],
   "oneTimeBlocks": [],
   "quoteVault": [
+    {
+      "author": "Programming",
+      "authorCode": "Programming",
+      "files": [
+        {
+          "filename": "Programming.md",
+          "quotes": [
+            "\"It’s not that I’m so smart, it’s just that I stay with problems longer. - Albert Einstein\"",
+            "\"Simplicity is the ultimate sophistication. - Leonardo da Vinci\""
+          ]
+        }
+      ]
+    },
     {
       "author": "Working Out",
       "authorCode": "Working Out",
@@ -55,19 +68,6 @@
             "\"You can either suffer the pain of discipline or the pain of regret. –Jim Rohn\"",
             "\"Success is walking from failure to failure with no loss of enthusiasm. –Winston Churchill\"",
             "\"Our bodies are gardens, our wills are our gardeners. – William Shakespeare\""
-          ]
-        }
-      ]
-    },
-    {
-      "author": "Programming",
-      "authorCode": "Programming",
-      "files": [
-        {
-          "filename": "Programming.md",
-          "quotes": [
-            "\"It’s not that I’m so smart, it’s just that I stay with problems longer. - Albert Einstein\"",
-            "\"Simplicity is the ultimate sophistication. - Leonardo da Vinci\""
           ]
         }
       ]
