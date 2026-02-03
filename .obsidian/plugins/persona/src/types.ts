@@ -19,8 +19,10 @@ export interface MCPSettings {
 export const DEFAULT_MCP_SETTINGS: MCPSettings = {
   ical: {
     enabled: false,
-    command: 'uvx',
-    args: ['mcp-ical'],
+    // mcp-ical must be cloned locally: git clone https://github.com/Omar-V2/mcp-ical.git
+    // Then run: cd mcp-ical && uv sync
+    command: 'uv',
+    args: ['--directory', '/path/to/mcp-ical', 'run', 'mcp-ical'],
     enabledCalendars: [], // Empty = all calendars
   },
 };

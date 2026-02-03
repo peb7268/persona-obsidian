@@ -23,30 +23,17 @@
     {
       "content": {
         "author": "Working Out",
-        "text": "\"A champion is someone who gets up when they can’t. – Jack Dempsey\""
+        "text": "\"Our bodies are gardens, our wills are our gardeners. – William Shakespeare\""
       },
       "customClass": null,
       "id": "x5zzK",
-      "lastUpdate": 1766952764.98,
+      "lastUpdate": 1770068432.466,
       "refresh": 300,
       "search": "Working Out"
     }
   ],
   "oneTimeBlocks": [],
   "quoteVault": [
-    {
-      "author": "Programming",
-      "authorCode": "Programming",
-      "files": [
-        {
-          "filename": "Programming.md",
-          "quotes": [
-            "\"It’s not that I’m so smart, it’s just that I stay with problems longer. - Albert Einstein\"",
-            "\"Simplicity is the ultimate sophistication. - Leonardo da Vinci\""
-          ]
-        }
-      ]
-    },
     {
       "author": "Working Out",
       "authorCode": "Working Out",
@@ -68,6 +55,19 @@
             "\"You can either suffer the pain of discipline or the pain of regret. –Jim Rohn\"",
             "\"Success is walking from failure to failure with no loss of enthusiasm. –Winston Churchill\"",
             "\"Our bodies are gardens, our wills are our gardeners. – William Shakespeare\""
+          ]
+        }
+      ]
+    },
+    {
+      "author": "Programming",
+      "authorCode": "Programming",
+      "files": [
+        {
+          "filename": "Programming.md",
+          "quotes": [
+            "\"It’s not that I’m so smart, it’s just that I stay with problems longer. - Albert Einstein\"",
+            "\"Simplicity is the ultimate sophistication. - Leonardo da Vinci\""
           ]
         }
       ]

@@ -5,7 +5,7 @@
  * like mcp-ical (calendar integration).
  */
 
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, execSync } from 'child_process';
 import { MCPICalSettings } from '../types';
 
 // Connection states for tracking MCP server status
@@ -74,11 +74,67 @@ export class MCPClientService {
   }
 
   /**
+   * Check if a command exists on the system.
+   * Useful for pre-flight checks before attempting to connect.
+   */
+  static commandExists(command: string): boolean {
+    try {
+      // Use 'which' on Unix-like systems
+      execSync(`which ${command}`, { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Get install instructions for a missing command.
+   */
+  static getInstallInstructions(command: string): string {
+    const instructions: Record<string, string> = {
+      'uvx': 'brew install uv',
+      'uv': 'brew install uv',
+      'npx': 'Install Node.js from https://nodejs.org',
+      'python3': 'brew install python3',
+    };
+    return instructions[command] || `Install ${command}`;
+  }
+
+  /**
+   * Get setup instructions for mcp-ical specifically.
+   */
+  static getMcpIcalSetupInstructions(): string {
+    return `mcp-ical setup required:
+1. git clone https://github.com/Omar-V2/mcp-ical.git
+2. cd mcp-ical && uv sync
+3. Update Persona settings with the correct path`;
+  }
+
+  /**
+   * Get calendar permission instructions for macOS.
+   */
+  static getCalendarPermissionInstructions(): string {
+    return `Calendar access denied. To grant permission:
+1. Open System Settings → Privacy & Security → Calendars
+2. Click + and navigate to: /Library/Frameworks/Python.framework/Versions/3.12/bin/
+3. Select python3.12 and click Open
+4. Ensure the checkbox is enabled
+5. Restart Terminal and Obsidian`;
+  }
+
+  /**
    * Connect to an MCP server.
    */
   async connect(config: MCPServerConfig): Promise<void> {
     if (this.state === MCPConnectionState.CONNECTED) {
       await this.disconnect();
+    }
+
+    // Pre-flight check: verify command exists
+    if (!MCPClientService.commandExists(config.command)) {
+      const installCmd = MCPClientService.getInstallInstructions(config.command);
+      this.state = MCPConnectionState.ERROR;
+      throw new Error(`${config.command} not found. Install with: ${installCmd}`);
     }
 
     this.config = config;
@@ -113,7 +169,7 @@ export class MCPClientService {
           if (this.detectPermissionError(message)) {
             this.state = MCPConnectionState.PERMISSION_DENIED;
             this.clearConnectionTimeout();
-            reject(new Error('Calendar access denied. Grant permission in System Settings > Privacy & Security > Calendar'));
+            reject(new Error(MCPClientService.getCalendarPermissionInstructions()));
             this.cleanup();
           }
         });

@@ -102,6 +102,85 @@ describe('QueueConsumerService', () => {
         expect.stringContaining('Orphaned')
       );
     });
+
+    it('should cleanup multiple orphaned jobs', async () => {
+      const hungJobs = [
+        { id: 'uuid-1', shortId: 'hung1', type: 'research', status: 'running', assignedTo: 'researcher' },
+        { id: 'uuid-2', shortId: 'hung2', type: 'agent_action', status: 'running', assignedTo: 'assistant' },
+        { id: 'uuid-3', shortId: 'hung3', type: 'meeting_extract', status: 'running', assignedTo: 'ceo' },
+      ];
+      mockJobQueueService.getHungJobs.mockResolvedValue(hungJobs);
+
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      await queueConsumer.start();
+
+      expect(mockJobQueueService.updateJobStatus).toHaveBeenCalledTimes(3);
+      expect(mockJobQueueService.updateJobStatus).toHaveBeenCalledWith('hung1', 'failed', expect.stringContaining('Orphaned'));
+      expect(mockJobQueueService.updateJobStatus).toHaveBeenCalledWith('hung2', 'failed', expect.stringContaining('Orphaned'));
+      expect(mockJobQueueService.updateJobStatus).toHaveBeenCalledWith('hung3', 'failed', expect.stringContaining('Orphaned'));
+      consoleSpy.mockRestore();
+    });
+
+    it('should log when no orphaned jobs found', async () => {
+      mockJobQueueService.getHungJobs.mockResolvedValue([]);
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      await queueConsumer.start();
+
+      expect(consoleSpy).toHaveBeenCalledWith('[QueueConsumer] No orphaned jobs found');
+      consoleSpy.mockRestore();
+    });
+
+    it('should use configured hung threshold', async () => {
+      const customSettings = { ...mockSettings, hungThresholdMinutes: 15 };
+      const customConsumer = new QueueConsumerService(
+        mockJobQueueService,
+        mockExecutionService,
+        slotManager,
+        customSettings
+      );
+
+      await customConsumer.start();
+
+      expect(mockJobQueueService.getHungJobs).toHaveBeenCalledWith(15);
+      customConsumer.stop();
+    });
+
+    it('should handle errors during orphan cleanup gracefully', async () => {
+      mockJobQueueService.getHungJobs.mockRejectedValue(new Error('Database error'));
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      await queueConsumer.start();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[QueueConsumer] Failed to clean up orphaned jobs:',
+        expect.any(Error)
+      );
+      // Consumer should still start despite cleanup error
+      expect(queueConsumer.isRunning()).toBe(true);
+      consoleSpy.mockRestore();
+    });
+
+    it('should include threshold in orphan error message', async () => {
+      const hungJob = { id: 'uuid-hung', shortId: 'hung123', status: 'running', assignedTo: 'researcher' };
+      mockJobQueueService.getHungJobs.mockResolvedValue([hungJob]);
+      const customSettings = { ...mockSettings, hungThresholdMinutes: 10 };
+      const customConsumer = new QueueConsumerService(
+        mockJobQueueService,
+        mockExecutionService,
+        slotManager,
+        customSettings
+      );
+
+      await customConsumer.start();
+
+      expect(mockJobQueueService.updateJobStatus).toHaveBeenCalledWith(
+        'hung123',
+        'failed',
+        expect.stringContaining('10+ minutes')
+      );
+      customConsumer.stop();
+    });
   });
 
   describe('getStatus', () => {

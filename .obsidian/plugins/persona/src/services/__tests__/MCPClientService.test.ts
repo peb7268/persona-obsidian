@@ -1,9 +1,10 @@
 import { MCPClientService, MCPConnectionState, MCPServerConfig } from '../MCPClientService';
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import { EventEmitter } from 'events';
 
 // Mock child_process
 jest.mock('child_process');
+const mockExecSync = execSync as jest.Mock;
 
 describe('MCPClientService', () => {
   let service: MCPClientService;
@@ -21,6 +22,9 @@ describe('MCPClientService', () => {
     };
 
     service = new MCPClientService();
+
+    // By default, assume command exists (pre-flight check passes)
+    mockExecSync.mockReturnValue(Buffer.from('/usr/local/bin/uvx'));
   });
 
   afterEach(async () => {
@@ -389,6 +393,7 @@ describe('MCPClientService', () => {
     it('should handle JSON split across multiple data events', async () => {
       const mockProcess = createMockProcess();
       (spawn as jest.Mock).mockReturnValue(mockProcess);
+      mockExecSync.mockReturnValue(Buffer.from('/usr/local/bin/uvx'));
 
       // Connect
       const connectPromise = service.connect(mockConfig);
@@ -401,6 +406,75 @@ describe('MCPClientService', () => {
       });
 
       await connectPromise;
+      expect(service.isConnected()).toBe(true);
+    });
+  });
+
+  describe('commandExists', () => {
+    it('should return true when command exists', () => {
+      mockExecSync.mockReturnValue(Buffer.from('/usr/local/bin/uvx'));
+
+      const result = MCPClientService.commandExists('uvx');
+
+      expect(result).toBe(true);
+      expect(mockExecSync).toHaveBeenCalledWith('which uvx', { stdio: 'ignore' });
+    });
+
+    it('should return false when command does not exist', () => {
+      mockExecSync.mockImplementation(() => {
+        throw new Error('Command not found');
+      });
+
+      const result = MCPClientService.commandExists('nonexistent');
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('getInstallInstructions', () => {
+    it('should return brew install for uvx', () => {
+      const result = MCPClientService.getInstallInstructions('uvx');
+      expect(result).toBe('brew install uv');
+    });
+
+    it('should return generic instruction for unknown command', () => {
+      const result = MCPClientService.getInstallInstructions('unknown-cmd');
+      expect(result).toBe('Install unknown-cmd');
+    });
+  });
+
+  describe('pre-flight command check', () => {
+    it('should fail fast if command does not exist', async () => {
+      mockExecSync.mockImplementation(() => {
+        throw new Error('Command not found');
+      });
+
+      await expect(service.connect(mockConfig)).rejects.toThrow('uvx not found. Install with: brew install uv');
+      expect(service.getState()).toBe(MCPConnectionState.ERROR);
+      // spawn should NOT have been called
+      expect(spawn).not.toHaveBeenCalled();
+    });
+
+    it('should proceed with spawn if command exists', async () => {
+      const mockProcess = createMockProcess();
+      (spawn as jest.Mock).mockReturnValue(mockProcess);
+      mockExecSync.mockReturnValue(Buffer.from('/usr/local/bin/uvx'));
+
+      const connectPromise = service.connect(mockConfig);
+
+      setImmediate(() => {
+        const response = {
+          jsonrpc: '2.0',
+          id: '1',
+          result: { protocolVersion: '2024-11-05' },
+        };
+        mockProcess.stdout.emit('data', JSON.stringify(response) + '\n');
+      });
+
+      await connectPromise;
+
+      expect(mockExecSync).toHaveBeenCalledWith('which uvx', { stdio: 'ignore' });
+      expect(spawn).toHaveBeenCalled();
       expect(service.isConnected()).toBe(true);
     });
   });

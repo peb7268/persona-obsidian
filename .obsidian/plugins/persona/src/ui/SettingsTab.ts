@@ -360,6 +360,20 @@ export class PersonaSettingTab extends PluginSettingTab {
     // MCP Servers section
     containerEl.createEl('h3', { text: 'MCP Servers' });
 
+    // Setup instructions
+    const mcpSetupEl = containerEl.createEl('div', { cls: 'setting-item-description' });
+    mcpSetupEl.innerHTML = `
+      <details>
+        <summary style="cursor: pointer; color: var(--text-accent);">mcp-ical setup instructions</summary>
+        <ol style="margin: 8px 0; padding-left: 20px;">
+          <li><code>git clone https://github.com/Omar-V2/mcp-ical.git</code></li>
+          <li><code>cd mcp-ical && uv sync</code></li>
+          <li>Set command to <code>uv</code> and args to <code>--directory /path/to/mcp-ical run mcp-ical</code></li>
+          <li>Obsidian must be launched from Terminal for calendar permissions</li>
+        </ol>
+      </details>
+    `;
+
     new Setting(containerEl)
       .setName('Enable Calendar (mcp-ical)')
       .setDesc('Fetch calendar events via MCP server for meeting note creation')
@@ -374,13 +388,26 @@ export class PersonaSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('MCP-iCal command')
-      .setDesc('Command to run mcp-ical (default: uvx)')
+      .setDesc('Command to run (uv for local install, uvx if published to PyPI)')
       .addText((text) =>
         text
-          .setPlaceholder('uvx')
+          .setPlaceholder('uv')
           .setValue(this.plugin.settings.mcp.ical.command)
           .onChange(async (value) => {
             this.plugin.settings.mcp.ical.command = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('MCP-iCal args')
+      .setDesc('Arguments for the command (e.g., --directory /path/to/mcp-ical run mcp-ical)')
+      .addText((text) =>
+        text
+          .setPlaceholder('--directory /path/to/mcp-ical run mcp-ical')
+          .setValue(this.plugin.settings.mcp.ical.args.join(' '))
+          .onChange(async (value) => {
+            this.plugin.settings.mcp.ical.args = value.split(' ').filter(a => a.length > 0);
             await this.plugin.saveSettings();
           })
       );
