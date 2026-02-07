@@ -8,7 +8,7 @@ import { QueueConsumerService } from './services/QueueConsumerService';
 import { ExecutionSlotManager } from './services/ExecutionSlotManager';
 import { EventService, JobChangeEvent } from './services/EventService';
 import { ServiceManager, createManagedService, LifecycleEvent } from './services/ServiceManager';
-import { MCPClientService, MCPHealthResult } from './services/MCPClientService';
+import { MCPClientService, MCPConnectionState, MCPHealthResult } from './services/MCPClientService';
 import { CalendarFetchService } from './services/CalendarFetchService';
 import { CalendarJobHandler } from './services/CalendarJobHandler';
 import { CalendarLogger } from './services/CalendarLogger';
@@ -843,6 +843,20 @@ export default class PersonaPlugin extends Plugin {
     }
 
     const config = MCPClientService.configFromSettings(this.settings.mcp.ical);
+
+    // Connect with the config from settings (testConnection needs an active config)
+    try {
+      await this.mcpClient.connect(config);
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      return {
+        connected: false,
+        serverName: config.name,
+        error,
+        permissionDenied: this.mcpClient.getState() === MCPConnectionState.PERMISSION_DENIED,
+      };
+    }
+
     return this.mcpClient.testConnection();
   }
 

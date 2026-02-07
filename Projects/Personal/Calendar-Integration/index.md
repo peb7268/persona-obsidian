@@ -131,6 +131,34 @@ Date:: [[Resources/Agenda/Daily/YYYY-MM-DD|YYYY-MM-DD]]
 
 ---
 
+## Known Issues (2026-02-07)
+
+### Bug: `testMCPConnection()` never passed config to MCP client
+The Test Connection button in settings always returned "No configuration provided" because the config created from settings was discarded — never passed to the MCPClientService. **Fixed** in `main.ts`.
+
+### Root Cause: macOS TCC Permission Prompt Never Appears
+When Obsidian (Electron app, launched from Finder) spawns mcp-ical as a child process, macOS TCC checks the **parent application bundle** for calendar permission. Obsidian's `Info.plist` does not declare `NSCalendarsUsageDescription`, so:
+- Permission is **silently denied** — no prompt ever appears
+- The child process (Python/PyObjC) inherits Obsidian's TCC context
+- Even with the code bug fixed, TCC blocks calendar access
+
+**Workarounds** (all fragile):
+1. Launch Obsidian from Terminal (`open /Applications/Obsidian.app` or direct binary) — Terminal.app may have Full Disk Access
+2. Manually edit `TCC.db` (requires SIP disabled, risky)
+3. Grant Python binary calendar access in System Settings (unreliable for subprocess chains)
+
+### Recommendation: Switch to outlook-mcp (Microsoft Graph API)
+The `mcp-ical` approach has a fundamental macOS TCC incompatibility when spawned from Obsidian. Consider switching to [outlook-mcp](https://github.com/ryaker/outlook-mcp) which uses Microsoft Graph API over HTTP — no TCC dependency, works from any parent process.
+
+| Approach | TCC Required | Works from Obsidian | Setup Complexity |
+|----------|-------------|-------------------|-----------------|
+| mcp-ical (current) | Yes - blocked | No (silent deny) | Low but broken |
+| outlook-mcp (Graph API) | No | Yes | Medium (Azure AD OAuth) |
+| Computer Use | No | No (Linux container only) | High, unreliable |
+| M365 Connector | No | Yes | Enterprise plan required |
+
+---
+
 ## Troubleshooting
 
 ### MCP Server Not Found
@@ -157,6 +185,7 @@ If you have multiple calendars, specify the calendar name when querying.
 | Resource | Link |
 |----------|------|
 | mcp-ical GitHub | https://github.com/Omar-V2/mcp-ical |
+| outlook-mcp (recommended) | https://github.com/ryaker/outlook-mcp |
 | Alternative: mcp-server-apple-events | https://github.com/FradSer/mcp-server-apple-events |
 | TCC Permission Guide | https://lenticular.zone/macos-tcc-claude-mcp/ |
 | Meeting Template | [[Resources/General/Templates/Meeting]] |
